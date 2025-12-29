@@ -24,7 +24,8 @@ const elements = {
   patchList: document.getElementById('patchList'),
   detailsContent: document.getElementById('detailsContent'),
   patchesLoaded: document.getElementById('patchesLoaded'),
-  lastSent: document.getElementById('lastSent')
+  lastSent: document.getElementById('lastSent'),
+  selectAllBtn: document.getElementById('selectAllBtn')
 };
 
 // Initialize
@@ -42,6 +43,7 @@ function setupEventListeners() {
   elements.autoSend.addEventListener('change', savePreferences);
   elements.categorySearch.addEventListener('input', filterCategories);
   elements.patchSearch.addEventListener('input', filterPatches);
+  elements.selectAllBtn.addEventListener('click', selectAllVisiblePatches);
 }
 
 // Preferences
@@ -396,22 +398,43 @@ function renderPatches() {
     const isMultiSelected = selectedPatches.some(p => p.id === patch.id);
     return `
       <div class="patch-card ${isSelected ? 'selected' : ''} ${isMultiSelected ? 'multi-selected' : ''}" data-id="${patch.id}">
+        <button class="patch-select-icon ${isMultiSelected ? 'selected' : ''}" data-action="toggle-select" title="Add to selection">
+          ${isMultiSelected ? '☑' : '☐'}
+        </button>
         <div class="patch-name">${patch.name}</div>
         <div class="patch-values">
           <span>PC: ${patch.pc}</span>
           <span>LSB: ${patch.lsb}</span>
           <span>MSB: ${patch.msb}</span>
         </div>
-        ${isMultiSelected ? '<div class="multi-select-indicator">✓</div>' : ''}
       </div>
     `;
   }).join('');
+
+  // Show/hide Select All button
+  if (filtered.length > 0) {
+    elements.selectAllBtn.style.display = 'flex';
+    // Update button text based on current selection
+    const allSelected = filtered.length > 0 && filtered.every(p => selectedPatches.some(sp => sp.id === p.id));
+    elements.selectAllBtn.innerHTML = allSelected
+      ? '<span class="btn-icon">☐</span>Deselect All'
+      : '<span class="btn-icon">☑️</span>Select All';
+  } else {
+    elements.selectAllBtn.style.display = 'none';
+  }
   
   // Add click handlers
   elements.patchList.querySelectorAll('.patch-card').forEach(card => {
     card.addEventListener('click', (e) => {
       const id = parseInt(card.dataset.id);
       const patch = patches.find(p => p.id === id);
+
+      // Check if the select icon was clicked
+      if (e.target.closest('[data-action="toggle-select"]')) {
+        e.stopPropagation();
+        togglePatchSelection(patch);
+        return;
+      }
 
       // Multi-select with Cmd/Ctrl key
       if (e.metaKey || e.ctrlKey) {
@@ -421,7 +444,11 @@ function renderPatches() {
       }
     });
 
-    card.addEventListener('dblclick', () => {
+    card.addEventListener('dblclick', (e) => {
+      // Don't double-click if clicking the select icon
+      if (e.target.closest('[data-action="toggle-select"]')) {
+        return;
+      }
       const id = parseInt(card.dataset.id);
       const patch = patches.find(p => p.id === id);
       sendPatch(patch);
@@ -461,6 +488,49 @@ function togglePatchSelection(patch) {
 
 function clearMultiSelect() {
   selectedPatches = [];
+  renderPatches();
+  renderDetails();
+}
+
+function selectAllVisiblePatches() {
+  // Get currently filtered patches
+  const search = elements.patchSearch.value.toLowerCase();
+  let filtered = patches;
+
+  if (selectedCategory) {
+    filtered = filtered.filter(p => p.category === selectedCategory);
+  }
+
+  if (search) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(search) ||
+      p.category.toLowerCase().includes(search)
+    );
+  }
+
+  // Check if all visible patches are already selected
+  const allSelected = filtered.length > 0 && filtered.every(p => selectedPatches.some(sp => sp.id === p.id));
+
+  if (allSelected) {
+    // Deselect all visible patches
+    filtered.forEach(patch => {
+      const index = selectedPatches.findIndex(p => p.id === patch.id);
+      if (index >= 0) {
+        selectedPatches.splice(index, 1);
+      }
+    });
+  } else {
+    // Select all visible patches
+    filtered.forEach(patch => {
+      if (!selectedPatches.some(p => p.id === patch.id)) {
+        selectedPatches.push(patch);
+      }
+    });
+  }
+
+  // Clear single selection when multi-selecting
+  selectedPatch = null;
+
   renderPatches();
   renderDetails();
 }

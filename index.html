@@ -88,8 +88,14 @@
       <!-- Patch List -->
       <main class="patch-area">
         <div class="patch-header">
-          <h2 id="currentCategory">All Patches</h2>
-          <span class="patch-count" id="patchCount">0 voices</span>
+          <div class="patch-header-left">
+            <h2 id="currentCategory">All Patches</h2>
+            <span class="patch-count" id="patchCount">0 voices</span>
+          </div>
+          <button id="selectAllBtn" class="btn btn-secondary btn-small" style="display: none;">
+            <span class="btn-icon">☑️</span>
+            Select All
+          </button>
         </div>
         <div class="search-box">
           <input type="text" id="patchSearch" placeholder="Search patches...">

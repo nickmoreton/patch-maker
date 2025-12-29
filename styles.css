@@ -115,6 +115,11 @@ body {
   border-color: var(--accent);
 }
 
+.btn-small {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
 .btn-icon-only {
   width: 36px;
   height: 36px;
@@ -327,6 +332,12 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.patch-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .patch-header h2 {
   font-size: 1.1rem;
   font-weight: 600;
@@ -379,21 +390,41 @@ body {
   border-width: 2px;
 }
 
-.multi-select-indicator {
+.patch-select-icon {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: var(--success);
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-dim);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.patch-select-icon:hover {
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+.patch-select-icon.selected {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.patch-select-icon.selected:hover {
+  background: #3bc770;
+  border-color: #3bc770;
 }
 
 .patch-card .patch-name {
