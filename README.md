@@ -2,7 +2,7 @@
 
 A desktop MIDI utility app for browsing and sending patches to the Yamaha Genos workstation.
 
-![Genos Patch Browser](screenshot.png)
+![Genos Patch Browser](screen.png)
 
 ## Features
 
