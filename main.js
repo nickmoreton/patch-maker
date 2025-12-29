@@ -182,3 +182,67 @@ ipcMain.handle('export-pst', async (event, patchData) => {
     };
   }
 });
+
+ipcMain.handle('export-batch-pst', async (event, patchesData) => {
+  try {
+    // Show directory picker
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Directory for Batch Export',
+      properties: ['openDirectory', 'createDirectory']
+    });
+
+    if (result.canceled) {
+      return { success: false, canceled: true };
+    }
+
+    const targetDir = result.filePaths[0];
+    let successCount = 0;
+    const errors = [];
+
+    // Export each patch
+    for (const patchData of patchesData) {
+      try {
+        const { name, category, msb, lsb, pc } = patchData;
+
+        // Generate filename
+        const filename = generateFilename(category, name);
+        const filePath = path.join(targetDir, `${filename}.pst`);
+
+        // Generate PST file
+        const pstBuffer = generatePST({
+          voiceName: name,
+          program: pc,
+          bankLSB: lsb,
+          bankMSB: msb,
+          midiChannel: 1,
+          midiDestination: "MD-BT01"
+        });
+
+        // Write to file
+        fs.writeFileSync(filePath, pstBuffer);
+        successCount++;
+      } catch (e) {
+        errors.push({ name: patchData.name, error: e.message });
+      }
+    }
+
+    if (errors.length > 0 && successCount === 0) {
+      return {
+        success: false,
+        error: `Failed to export any files. First error: ${errors[0].error}`
+      };
+    }
+
+    return {
+      success: true,
+      count: successCount,
+      errors: errors.length > 0 ? errors : undefined,
+      directory: targetDir
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: e.message
+    };
+  }
+});

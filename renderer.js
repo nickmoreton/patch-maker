@@ -3,6 +3,7 @@ let patches = [];
 let categories = [];
 let selectedCategory = null;
 let selectedPatch = null;
+let selectedPatches = []; // Multi-select array
 let midiConnected = false;
 let webMidiOutput = null;
 
@@ -222,6 +223,48 @@ async function exportLogicPreset(patch) {
   }
 }
 
+async function batchExportPresets(patches) {
+  if (!window.electronAPI) {
+    alert('Export function not available in web mode');
+    return;
+  }
+
+  if (patches.length === 0) {
+    alert('No patches selected');
+    return;
+  }
+
+  // Ask user to select a directory
+  const result = await window.electronAPI.exportBatchPST(patches.map(p => ({
+    name: p.name,
+    category: p.category,
+    msb: p.msb,
+    lsb: p.lsb,
+    pc: p.pc
+  })));
+
+  if (result.success) {
+    // Show success feedback
+    const exportBtn = document.getElementById('batchExportBtn');
+    if (exportBtn) {
+      const originalText = exportBtn.innerHTML;
+      exportBtn.innerHTML = `<span class="btn-icon">✓</span>Exported ${result.count} files!`;
+      exportBtn.style.backgroundColor = 'var(--success)';
+      setTimeout(() => {
+        exportBtn.innerHTML = originalText;
+        exportBtn.style.backgroundColor = '';
+      }, 3000);
+    }
+
+    // Clear selection after successful export
+    setTimeout(() => {
+      clearMultiSelect();
+    }, 3000);
+  } else if (!result.canceled) {
+    alert('Error exporting presets: ' + (result.error || 'Unknown error'));
+  }
+}
+
 // Patch Loading
 async function loadDefaultPatches() {
   if (window.electronAPI) {
@@ -348,25 +391,36 @@ function renderPatches() {
     return;
   }
   
-  elements.patchList.innerHTML = filtered.map(patch => `
-    <div class="patch-card ${selectedPatch?.id === patch.id ? 'selected' : ''}" data-id="${patch.id}">
-      <div class="patch-name">${patch.name}</div>
-      <div class="patch-values">
-        <span>PC: ${patch.pc}</span>
-        <span>LSB: ${patch.lsb}</span>
-        <span>MSB: ${patch.msb}</span>
+  elements.patchList.innerHTML = filtered.map(patch => {
+    const isSelected = selectedPatch?.id === patch.id;
+    const isMultiSelected = selectedPatches.some(p => p.id === patch.id);
+    return `
+      <div class="patch-card ${isSelected ? 'selected' : ''} ${isMultiSelected ? 'multi-selected' : ''}" data-id="${patch.id}">
+        <div class="patch-name">${patch.name}</div>
+        <div class="patch-values">
+          <span>PC: ${patch.pc}</span>
+          <span>LSB: ${patch.lsb}</span>
+          <span>MSB: ${patch.msb}</span>
+        </div>
+        ${isMultiSelected ? '<div class="multi-select-indicator">✓</div>' : ''}
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
   
   // Add click handlers
   elements.patchList.querySelectorAll('.patch-card').forEach(card => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
       const id = parseInt(card.dataset.id);
       const patch = patches.find(p => p.id === id);
-      selectPatch(patch);
+
+      // Multi-select with Cmd/Ctrl key
+      if (e.metaKey || e.ctrlKey) {
+        togglePatchSelection(patch);
+      } else {
+        selectPatch(patch);
+      }
     });
-    
+
     card.addEventListener('dblclick', () => {
       const id = parseInt(card.dataset.id);
       const patch = patches.find(p => p.id === id);
@@ -377,6 +431,8 @@ function renderPatches() {
 
 function selectPatch(patch) {
   selectedPatch = patch;
+  // Clear multi-select when single-selecting
+  selectedPatches = [];
   renderPatches();
   renderDetails();
 
@@ -386,12 +442,79 @@ function selectPatch(patch) {
   }
 }
 
+function togglePatchSelection(patch) {
+  const index = selectedPatches.findIndex(p => p.id === patch.id);
+  if (index >= 0) {
+    // Deselect
+    selectedPatches.splice(index, 1);
+  } else {
+    // Select
+    selectedPatches.push(patch);
+  }
+
+  // Clear single selection when multi-selecting
+  selectedPatch = null;
+
+  renderPatches();
+  renderDetails();
+}
+
+function clearMultiSelect() {
+  selectedPatches = [];
+  renderPatches();
+  renderDetails();
+}
+
 function renderDetails() {
+  // Show multi-select export UI if multiple patches selected
+  if (selectedPatches.length > 0) {
+    elements.detailsContent.innerHTML = `
+      <div class="patch-details">
+        <div class="detail-category">Multi-Select Mode</div>
+        <div class="detail-name">${selectedPatches.length} patches selected</div>
+
+        <div class="multi-select-info">
+          <div class="detail-row">
+            <span class="label">Selected</span>
+            <span class="value">${selectedPatches.length}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="batchExportBtn">
+          <span class="btn-icon">💾</span>
+          Export All as Logic Presets
+        </button>
+
+        <button class="btn btn-secondary" id="clearSelectionBtn" style="margin-top: 8px;">
+          <span class="btn-icon">✕</span>
+          Clear Selection
+        </button>
+
+        <p style="font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 12px;">
+          Cmd/Ctrl+Click to select/deselect patches
+        </p>
+      </div>
+    `;
+
+    document.getElementById('batchExportBtn').addEventListener('click', () => {
+      batchExportPresets(selectedPatches);
+    });
+
+    document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+      clearMultiSelect();
+    });
+
+    return;
+  }
+
   if (!selectedPatch) {
     elements.detailsContent.innerHTML = `
       <div class="no-selection">
         <span class="no-selection-icon">🎹</span>
         <p>Select a patch to view details</p>
+        <p style="font-size: 0.85rem; margin-top: 8px; color: var(--text-dim);">
+          Cmd/Ctrl+Click for multi-select
+        </p>
       </div>
     `;
     return;

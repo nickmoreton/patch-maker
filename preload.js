@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendPatch: (data) => ipcRenderer.invoke('send-patch', data),
   loadPatchesFile: () => ipcRenderer.invoke('load-patches-file'),
   getDefaultPatches: () => ipcRenderer.invoke('get-default-patches'),
-  exportPST: (patchData) => ipcRenderer.invoke('export-pst', patchData)
+  exportPST: (patchData) => ipcRenderer.invoke('export-pst', patchData),
+  exportBatchPST: (patchesData) => ipcRenderer.invoke('export-batch-pst', patchesData)
 });
