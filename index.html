@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com">
+  <title>Genos Patch Browser</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-drag-region"></div>
+      <div class="header-content">
+        <h1 class="logo">
+          <span class="logo-icon">🎹</span>
+          Genos Patch Browser
+        </h1>
+        <div class="header-controls">
+          <button id="loadFileBtn" class="btn btn-secondary">
+            <span class="btn-icon">📁</span>
+            Load Patches
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MIDI Settings Bar -->
+    <div class="midi-bar">
+      <div class="midi-setting">
+        <label>MIDI Output</label>
+        <select id="midiOutput">
+          <option value="">Select MIDI Device...</option>
+        </select>
+        <button id="refreshMidi" class="btn-icon-only" title="Refresh MIDI Devices">🔄</button>
+      </div>
+      <div class="midi-setting">
+        <label>Channel</label>
+        <select id="midiChannel">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+      <div class="midi-setting">
+        <label>
+          <input type="checkbox" id="autoSend">
+          Auto-send on select
+        </label>
+      </div>
+      <div class="midi-status" id="midiStatus">
+        <span class="status-dot disconnected"></span>
+        <span class="status-text">Not Connected</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar: Categories -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Categories</h2>
+          <span class="category-count" id="categoryCount">0</span>
+        </div>
+        <div class="search-box">
+          <input type="text" id="categorySearch" placeholder="Filter categories...">
+        </div>
+        <ul class="category-list" id="categoryList">
+          <!-- Categories populated by JS -->
+        </ul>
+      </aside>
+
+      <!-- Patch List -->
+      <main class="patch-area">
+        <div class="patch-header">
+          <h2 id="currentCategory">All Patches</h2>
+          <span class="patch-count" id="patchCount">0 voices</span>
+        </div>
+        <div class="search-box">
+          <input type="text" id="patchSearch" placeholder="Search patches...">
+        </div>
+        <div class="patch-list" id="patchList">
+          <!-- Patches populated by JS -->
+        </div>
+      </main>
+
+      <!-- Patch Details -->
+      <aside class="details-panel">
+        <div class="details-header">
+          <h2>Selected Patch</h2>
+        </div>
+        <div class="details-content" id="detailsContent">
+          <div class="no-selection">
+            <span class="no-selection-icon">🎹</span>
+            <p>Select a patch to view details</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer Status -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span id="patchesLoaded">No patches loaded</span>
+      </div>
+      <div class="footer-right">
+        <span id="lastSent">—</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
