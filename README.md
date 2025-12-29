@@ -13,6 +13,21 @@ A desktop MIDI utility app for browsing and sending patches to the Yamaha Genos 
 - 📁 Load custom patch lists from JSON files
 - 🎛️ Select MIDI channel (1-16)
 
+## App Icon (macOS)
+
+- The app includes a piano keyboard icon for the macOS Dock.
+- Source SVG: [assets/app-icon.svg](assets/app-icon.svg)
+- Generated iconset: [assets/AppIcon.iconset](assets/AppIcon.iconset)
+- Packaged mac icon: [assets/AppIcon.icns](assets/AppIcon.icns)
+
+Build the icons:
+
+```bash
+npm run icons:build
+```
+
+During development (`npm start`) on macOS, the Dock icon uses [assets/dock-icon-512.png](assets/dock-icon-512.png). If missing, Electron falls back to its default icon.
+
 ## Installation
 
 ### Prerequisites

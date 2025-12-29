@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { generatePST, generateFilename } = require('./pst-generator');
@@ -33,7 +33,19 @@ function createWindow() {
   mainWindow.loadFile('index.html');
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Set a custom Dock icon during development on macOS
+  if (process.platform === 'darwin') {
+    const devIconPath = path.join(__dirname, 'assets', 'dock-icon-512.png');
+    if (fs.existsSync(devIconPath) && app.dock) {
+      const image = nativeImage.createFromPath(devIconPath);
+      if (!image.isEmpty()) {
+        app.dock.setIcon(image);
+      }
+    }
+  }
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (midiOutput) {
