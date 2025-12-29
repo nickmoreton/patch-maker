@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { generatePST, generateFilename } = require('./pst-generator');
 
 // Try to load the midi module
 let midi;
@@ -134,4 +135,50 @@ ipcMain.handle('get-default-patches', async () => {
     }
   }
   return null;
+});
+
+ipcMain.handle('export-pst', async (event, patchData) => {
+  const { name, category, msb, lsb, pc } = patchData;
+
+  try {
+    // Generate filename
+    const defaultFilename = generateFilename(category, name);
+
+    // Show save dialog
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export Logic Pro Preset',
+      defaultPath: `${defaultFilename}.pst`,
+      filters: [
+        { name: 'Logic Pro Preset', extensions: ['pst'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    });
+
+    if (result.canceled) {
+      return { success: false, canceled: true };
+    }
+
+    // Generate PST file
+    const pstBuffer = generatePST({
+      voiceName: name,
+      program: pc,
+      bankLSB: lsb,
+      bankMSB: msb,
+      midiChannel: 1,
+      midiDestination: "MD-BT01"
+    });
+
+    // Write to file
+    fs.writeFileSync(result.filePath, pstBuffer);
+
+    return {
+      success: true,
+      filePath: result.filePath
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: e.message
+    };
+  }
 });

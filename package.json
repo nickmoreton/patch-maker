@@ -32,6 +32,8 @@
       "main.js",
       "index.html",
       "renderer.js",
+      "preload.js",
+      "pst-generator.js",
       "styles.css",
       "patches.json"
     ]

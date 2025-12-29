@@ -9,6 +9,7 @@ A desktop MIDI utility app for browsing and sending patches to the Yamaha Genos 
 - 🎹 Browse all 1,711 Genos voice patches organized by category
 - 🔍 Search and filter patches instantly
 - 🎵 Send patches directly to your Genos via MIDI
+- 💾 Export Logic Pro External Instrument presets (.pst files)
 - 📁 Load custom patch lists from JSON files
 - 🎛️ Select MIDI channel (1-16)
 
@@ -60,6 +61,24 @@ The built app will be in the `dist` folder.
 5. **Send a patch** by:
    - Double-clicking any patch card
    - Or selecting a patch and clicking "Send to Genos"
+
+## Exporting Logic Pro Presets
+
+You can now export any Genos voice as a Logic Pro External Instrument preset:
+
+1. **Select a voice** in the browser
+2. Click **"Export Logic Preset"** in the details panel
+3. Choose where to save the .pst file
+4. **Load in Logic Pro** - Open the External Instrument plugin and load your preset
+
+The exported preset automatically configures:
+- MIDI destination (MD-BT01 Bluetooth MIDI adapter)
+- MIDI channel (1)
+- Bank MSB/LSB and Program Change for the selected voice
+- Audio input routing (1-2, +8dB gain)
+- Auto-compensate latency (enabled)
+
+This eliminates manual Bank Select setup in Logic Pro for each voice!
 
 ## Custom Patch Files
 

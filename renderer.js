@@ -187,6 +187,41 @@ function flashPatchCard(patch) {
   }
 }
 
+async function exportLogicPreset(patch) {
+  if (!window.electronAPI) {
+    alert('Export function not available in web mode');
+    return;
+  }
+
+  try {
+    const result = await window.electronAPI.exportPST({
+      name: patch.name,
+      category: patch.category,
+      msb: patch.msb,
+      lsb: patch.lsb,
+      pc: patch.pc
+    });
+
+    if (result.success) {
+      // Show success feedback
+      const exportBtn = document.getElementById('exportBtn');
+      if (exportBtn) {
+        const originalText = exportBtn.innerHTML;
+        exportBtn.innerHTML = '<span class="btn-icon">✓</span>Exported!';
+        exportBtn.style.backgroundColor = 'var(--success)';
+        setTimeout(() => {
+          exportBtn.innerHTML = originalText;
+          exportBtn.style.backgroundColor = '';
+        }, 2000);
+      }
+    } else if (!result.canceled) {
+      alert('Error exporting preset: ' + (result.error || 'Unknown error'));
+    }
+  } catch (e) {
+    alert('Error exporting preset: ' + e.message);
+  }
+}
+
 // Patch Loading
 async function loadDefaultPatches() {
   if (window.electronAPI) {
@@ -386,15 +421,24 @@ function renderDetails() {
         <span class="btn-icon">🎵</span>
         Send to Genos
       </button>
-      
+
+      <button class="btn btn-secondary" id="exportBtn" style="margin-top: 8px;">
+        <span class="btn-icon">💾</span>
+        Export Logic Preset
+      </button>
+
       <p style="font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 8px;">
         Double-click any patch to send quickly
       </p>
     </div>
   `;
-  
+
   document.getElementById('sendBtn').addEventListener('click', () => {
     sendPatch(selectedPatch);
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    exportLogicPreset(selectedPatch);
   });
 }
 
