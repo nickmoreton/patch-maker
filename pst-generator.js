@@ -63,7 +63,7 @@ function generatePST(options) {
   // Parameter mappings based on reverse-engineering the reference file
   writeParam(1, 5);               // Audio input related (observed: 5)
   writeParam(2, midiChannel);     // MIDI Channel
-  writeParam(3, program + 1);     // Program Change (Logic stores as 1-indexed)
+  writeParam(3, 0);               // Unknown (always 0)
   writeParam(4, 1);               // Auto-compensate latency (1 = on)
   writeParam(5, 32);              // Audio input volume related (observed: 32 for +8dB)
   writeParam(6, 0);               // Unknown
@@ -72,7 +72,7 @@ function generatePST(options) {
   writeParam(9, 0);               // Unknown
   writeParam(10, 0);              // Unknown
   writeParam(11, 1);              // Unknown
-  writeParam(12, 1);              // Unknown
+  writeParam(12, program + 1);    // Program Change (Logic stores as 1-indexed!)
   writeParam(13, bankLSB + 1);    // Bank LSB (Logic stores as 1-indexed)
   writeParam(14, bankMSB + 1);    // Bank MSB (Logic stores as 1-indexed)
 
