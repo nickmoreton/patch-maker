@@ -104,7 +104,7 @@ function generatePST(options) {
  */
 function generateFilename(category, name) {
   // Combine category and name
-  const fullName = `Genos - ${category} - ${name}`;
+  const fullName = `${name}`;
 
   // Remove or replace invalid filename characters
   const sanitized = fullName
