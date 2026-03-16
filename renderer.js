@@ -14,7 +14,6 @@ const elements = {
   midiChannel: document.getElementById('midiChannel'),
   autoSend: document.getElementById('autoSend'),
   midiStatus: document.getElementById('midiStatus'),
-  loadFileBtn: document.getElementById('loadFileBtn'),
   categorySearch: document.getElementById('categorySearch'),
   categoryList: document.getElementById('categoryList'),
   categoryCount: document.getElementById('categoryCount'),
@@ -37,7 +36,6 @@ async function init() {
 }
 
 function setupEventListeners() {
-  elements.loadFileBtn.addEventListener('click', loadPatchesFromFile);
   elements.refreshMidi.addEventListener('click', refreshMidiDevices);
   elements.midiOutput.addEventListener('change', connectToMidiDevice);
   elements.autoSend.addEventListener('change', savePreferences);
@@ -277,40 +275,13 @@ async function loadDefaultPatches() {
     }
   }
   
-  // No default patches loaded
+  elements.patchesLoaded.textContent = 'No bundled patches available';
   elements.patchList.innerHTML = `
     <div class="loading" style="grid-column: 1/-1; flex-direction: column;">
-      <p>No patches loaded</p>
-      <p style="font-size: 0.85rem; margin-top: 8px;">Click "Load Patches" to load a patches.json file</p>
+      <p>No bundled patches loaded</p>
+      <p style="font-size: 0.85rem; margin-top: 8px;">Expected to find a valid patches.json file in the app bundle.</p>
     </div>
   `;
-}
-
-async function loadPatchesFromFile() {
-  if (window.electronAPI) {
-    const data = await window.electronAPI.loadPatchesFile();
-    if (data && !data.error) {
-      loadPatchData(data);
-    } else if (data && data.error) {
-      alert('Error loading file: ' + data.error);
-    }
-  } else {
-    // Web fallback - file input
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      const text = await file.text();
-      try {
-        const data = JSON.parse(text);
-        loadPatchData(data);
-      } catch (err) {
-        alert('Error parsing JSON: ' + err.message);
-      }
-    };
-    input.click();
-  }
 }
 
 function loadPatchData(data) {

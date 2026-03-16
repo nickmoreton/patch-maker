@@ -95,22 +95,6 @@ The exported preset automatically configures:
 
 This eliminates manual Bank Select setup in Logic Pro for each voice!
 
-## Custom Patch Files
-
-You can load your own patch lists by clicking "Load Patches". The JSON format should be:
-
-```json
-[
-  {
-    "category": "Category Name",
-    "name": "Patch Name",
-    "msb": 0,
-    "lsb": 104,
-    "pc": 21
-  }
-]
-```
-
 ## Troubleshooting
 
 ### MIDI device not showing up

@@ -73,12 +73,6 @@ body {
   font-size: 1.75rem;
 }
 
-.header-controls {
-  display: flex;
-  gap: 12px;
-  -webkit-app-region: no-drag;
-}
-
 /* Buttons */
 .btn {
   padding: 10px 20px;

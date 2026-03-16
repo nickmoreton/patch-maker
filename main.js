@@ -117,25 +117,6 @@ ipcMain.handle('send-patch', async (event, { channel, msb, lsb, pc }) => {
   }
 });
 
-ipcMain.handle('load-patches-file', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile'],
-    filters: [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-  
-  if (result.canceled) return null;
-  
-  try {
-    const content = fs.readFileSync(result.filePaths[0], 'utf-8');
-    return JSON.parse(content);
-  } catch (e) {
-    return { error: e.message };
-  }
-});
-
 ipcMain.handle('get-default-patches', async () => {
   const patchesPath = path.join(__dirname, 'patches.json');
   if (fs.existsSync(patchesPath)) {
