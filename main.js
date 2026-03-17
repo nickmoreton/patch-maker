@@ -86,6 +86,7 @@ ipcMain.handle('connect-midi', async (event, portId) => {
   try {
     if (midiOutput) {
       midiOutput.closePort();
+      midiOutput = null;
     }
     midiOutput = new midi.Output();
     midiOutput.openPort(portId);
@@ -93,6 +94,15 @@ ipcMain.handle('connect-midi', async (event, portId) => {
   } catch (e) {
     return { success: false, error: e.message };
   }
+});
+
+ipcMain.handle('disconnect-midi', async () => {
+  if (midiOutput) {
+    midiOutput.closePort();
+    midiOutput = null;
+  }
+
+  return { success: true };
 });
 
 ipcMain.handle('send-patch', async (event, { channel, msb, lsb, pc }) => {

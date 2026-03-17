@@ -134,9 +134,21 @@
   }
 
   async function connectToMidiDevice(portId) {
-    const nextPortId = String(portId || state.selectedMidiPortId || '');
+    const nextPortId = (
+      portId === undefined
+        ? String(state.selectedMidiPortId || '')
+        : String(portId || '')
+    );
 
     if (!nextPortId) {
+      if (global.electronAPI && global.electronAPI.disconnectMidi) {
+        try {
+          await global.electronAPI.disconnectMidi();
+        } catch (error) {
+          console.log('Electron MIDI disconnect failed');
+        }
+      }
+
       clearMidiSelection();
       closeMidiDeviceMenu();
       return;
