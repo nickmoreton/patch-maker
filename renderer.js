@@ -6,14 +6,22 @@ let selectedPatch = null;
 let selectedPatches = []; // Multi-select array
 let midiConnected = false;
 let webMidiOutput = null;
+let midiRefreshPromise = null;
+let lastMidiRefreshSignature = '';
+let midiPorts = [];
+let selectedMidiPortId = '';
+let midiMenuOpen = false;
 
 // DOM Elements
 const elements = {
-  midiOutput: document.getElementById('midiOutput'),
-  refreshMidi: document.getElementById('refreshMidi'),
+  midiDeviceControl: document.getElementById('midiDeviceControl'),
+  midiDeviceButton: document.getElementById('midiDeviceButton'),
+  midiDeviceMenu: document.getElementById('midiDeviceMenu'),
+  midiStatusDot: document.getElementById('midiStatusDot'),
+  midiDeviceName: document.getElementById('midiDeviceName'),
+  midiDeviceStatus: document.getElementById('midiDeviceStatus'),
   midiChannel: document.getElementById('midiChannel'),
   autoSend: document.getElementById('autoSend'),
-  midiStatus: document.getElementById('midiStatus'),
   categorySearch: document.getElementById('categorySearch'),
   categoryList: document.getElementById('categoryList'),
   categoryCount: document.getElementById('categoryCount'),
@@ -36,8 +44,11 @@ async function init() {
 }
 
 function setupEventListeners() {
-  elements.refreshMidi.addEventListener('click', refreshMidiDevices);
-  elements.midiOutput.addEventListener('change', connectToMidiDevice);
+  elements.midiDeviceButton.addEventListener('click', toggleMidiDeviceMenu);
+  elements.midiDeviceButton.addEventListener('keydown', handleMidiDeviceButtonKeydown);
+  elements.midiDeviceMenu.addEventListener('click', handleMidiDeviceOptionClick);
+  document.addEventListener('click', handleDocumentClick);
+  document.addEventListener('keydown', handleDocumentKeydown);
   elements.autoSend.addEventListener('change', savePreferences);
   elements.categorySearch.addEventListener('input', filterCategories);
   elements.patchSearch.addEventListener('input', filterPatches);
@@ -58,11 +69,26 @@ function savePreferences() {
 
 // MIDI Functions
 async function refreshMidiDevices() {
+  if (midiRefreshPromise) {
+    return midiRefreshPromise;
+  }
+
+  const selectedPortId = selectedMidiPortId;
+
+  midiRefreshPromise = refreshMidiDevicesInternal(selectedPortId);
+  try {
+    return await midiRefreshPromise;
+  } finally {
+    midiRefreshPromise = null;
+  }
+}
+
+async function refreshMidiDevicesInternal(selectedPortId) {
   // Try Electron API first
   if (window.electronAPI) {
     try {
       const ports = await window.electronAPI.getMidiOutputs();
-      populateMidiSelect(ports);
+      populateMidiDeviceMenu(ports, selectedPortId);
       return;
     } catch (e) {
       console.log('Electron MIDI not available, trying Web MIDI');
@@ -77,41 +103,186 @@ async function refreshMidiDevices() {
       midiAccess.outputs.forEach((output, id) => {
         ports.push({ id, name: output.name });
       });
-      populateMidiSelect(ports);
+      populateMidiDeviceMenu(ports, selectedPortId);
       
       // Store for later use
       window.midiAccess = midiAccess;
     } catch (e) {
       console.error('Web MIDI not available:', e);
-      elements.midiOutput.innerHTML = '<option value="">MIDI not available</option>';
+      midiPorts = [];
+      lastMidiRefreshSignature = '';
+      clearMidiSelection();
+      renderMidiDeviceMenu('MIDI not available');
     }
   }
 }
 
-function populateMidiSelect(ports) {
-  elements.midiOutput.innerHTML = '<option value="">Select MIDI Device...</option>';
-  ports.forEach(port => {
-    const option = document.createElement('option');
-    option.value = port.id;
-    option.textContent = port.name;
-    elements.midiOutput.appendChild(option);
-  });
+async function toggleMidiDeviceMenu() {
+  if (midiMenuOpen) {
+    closeMidiDeviceMenu();
+    return;
+  }
+
+  await refreshMidiDevices();
+  openMidiDeviceMenu();
 }
 
-async function connectToMidiDevice() {
-  const portId = elements.midiOutput.value;
+function populateMidiDeviceMenu(ports, selectedPortId = '') {
+  const nextSignature = JSON.stringify(ports.map(port => ({
+    id: String(port.id),
+    name: port.name
+  })));
+  const hasSelectedPort = selectedPortId && ports.some(port => String(port.id) === selectedPortId);
+
+  midiPorts = ports.map(port => ({
+    id: String(port.id),
+    name: port.name
+  }));
+
+  if (nextSignature === lastMidiRefreshSignature) {
+    if (selectedPortId && hasSelectedPort && selectedMidiPortId !== selectedPortId) {
+      selectedMidiPortId = selectedPortId;
+    }
+    if (selectedPortId && !hasSelectedPort) {
+      clearMidiSelection();
+    }
+    renderMidiDeviceMenu();
+    updateMidiDeviceButton();
+    return;
+  }
+
+  lastMidiRefreshSignature = nextSignature;
+  renderMidiDeviceMenu();
+
+  if (!selectedPortId) {
+    updateMidiDeviceButton();
+    return;
+  }
+
+  if (hasSelectedPort) {
+    selectedMidiPortId = selectedPortId;
+    updateMidiDeviceButton();
+    return;
+  }
+
+  clearMidiSelection();
+}
+
+function renderMidiDeviceMenu(message) {
+  const optionsMarkup = [
+    `
+      <button
+        type="button"
+        class="midi-device-option${selectedMidiPortId === '' ? ' selected' : ''}"
+        data-port-id=""
+        role="option"
+        aria-selected="${selectedMidiPortId === '' ? 'true' : 'false'}"
+      >
+        <span class="status-dot disconnected"></span>
+        <span class="midi-device-option-name">No MIDI Device</span>
+      </button>
+    `
+  ];
+
+  if (midiPorts.length > 0) {
+    optionsMarkup.push(...midiPorts.map(port => `
+    <button
+      type="button"
+      class="midi-device-option${selectedMidiPortId === port.id ? ' selected' : ''}"
+      data-port-id="${port.id}"
+      role="option"
+      aria-selected="${selectedMidiPortId === port.id ? 'true' : 'false'}"
+    >
+      <span class="status-dot ${selectedMidiPortId === port.id && midiConnected ? 'connected' : 'disconnected'}"></span>
+      <span class="midi-device-option-name">${port.name}</span>
+    </button>
+  `));
+  }
+
+  if (message) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">${message}</div>
+    `);
+  } else if (midiPorts.length === 0) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">No MIDI devices found</div>
+    `);
+  }
+
+  elements.midiDeviceMenu.innerHTML = optionsMarkup.join('');
+}
+
+function openMidiDeviceMenu() {
+  midiMenuOpen = true;
+  elements.midiDeviceControl.classList.add('open');
+  elements.midiDeviceButton.setAttribute('aria-expanded', 'true');
+  elements.midiDeviceMenu.hidden = false;
+}
+
+function closeMidiDeviceMenu() {
+  midiMenuOpen = false;
+  elements.midiDeviceControl.classList.remove('open');
+  elements.midiDeviceButton.setAttribute('aria-expanded', 'false');
+  elements.midiDeviceMenu.hidden = true;
+}
+
+function handleMidiDeviceButtonKeydown(event) {
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    toggleMidiDeviceMenu();
+  }
+}
+
+function handleMidiDeviceOptionClick(event) {
+  const option = event.target.closest('[data-port-id]');
+  if (!option) {
+    return;
+  }
+
+  connectToMidiDevice(option.dataset.portId);
+}
+
+function handleDocumentClick(event) {
+  if (!midiMenuOpen || elements.midiDeviceControl.contains(event.target)) {
+    return;
+  }
+
+  closeMidiDeviceMenu();
+}
+
+function handleDocumentKeydown(event) {
+  if (event.key === 'Escape' && midiMenuOpen) {
+    closeMidiDeviceMenu();
+    elements.midiDeviceButton.focus();
+  }
+}
+
+function clearMidiSelection() {
+  selectedMidiPortId = '';
+  webMidiOutput = null;
+  updateMidiStatus(false);
+  updateMidiDeviceButton();
+  renderMidiDeviceMenu();
+}
+
+async function connectToMidiDevice(portId = selectedMidiPortId) {
+  const nextPortId = String(portId || '');
   
-  if (!portId) {
-    updateMidiStatus(false);
+  if (!nextPortId) {
+    clearMidiSelection();
+    closeMidiDeviceMenu();
     return;
   }
   
   // Try Electron API first
   if (window.electronAPI) {
     try {
-      const result = await window.electronAPI.connectMidi(parseInt(portId));
+      const result = await window.electronAPI.connectMidi(parseInt(nextPortId, 10));
       if (result.success) {
+        selectedMidiPortId = nextPortId;
+        webMidiOutput = null;
         updateMidiStatus(true);
+        closeMidiDeviceMenu();
         return;
       }
     } catch (e) {
@@ -121,29 +292,43 @@ async function connectToMidiDevice() {
   
   // Fall back to Web MIDI
   if (window.midiAccess) {
-    webMidiOutput = window.midiAccess.outputs.get(portId);
+    webMidiOutput = window.midiAccess.outputs.get(nextPortId);
     if (webMidiOutput) {
+      selectedMidiPortId = nextPortId;
       updateMidiStatus(true);
+      closeMidiDeviceMenu();
+      return;
     }
   }
+
+  clearMidiSelection();
+  closeMidiDeviceMenu();
 }
 
 function updateMidiStatus(connected) {
   midiConnected = connected;
-  const dot = elements.midiStatus.querySelector('.status-dot');
-  const text = elements.midiStatus.querySelector('.status-text');
-  
-  if (connected) {
-    dot.className = 'status-dot connected';
-    text.textContent = 'Connected';
-  } else {
-    dot.className = 'status-dot disconnected';
-    text.textContent = 'Not Connected';
-  }
+  updateMidiDeviceButton();
+  renderMidiDeviceMenu();
+}
+
+function updateMidiDeviceButton() {
+  const selectedPort = midiPorts.find(port => port.id === selectedMidiPortId);
+  elements.midiStatusDot.className = `status-dot ${connectedStateClass()}`;
+  elements.midiDeviceName.textContent = selectedPort ? selectedPort.name : 'No MIDI Device';
+  elements.midiDeviceStatus.textContent = midiConnected && selectedPort ? 'Connected' : 'Not Connected';
+}
+
+function connectedStateClass() {
+  return midiConnected ? 'connected' : 'disconnected';
 }
 
 async function sendPatch(patch) {
   const channel = parseInt(elements.midiChannel.value);
+
+  if (!selectedMidiPortId || !midiConnected) {
+    alert('Please connect to a MIDI device first');
+    return;
+  }
   
   // Try Electron API first
   if (window.electronAPI) {
@@ -173,8 +358,6 @@ async function sendPatch(patch) {
     webMidiOutput.send([0xC0 + ch, patch.pc]);
     elements.lastSent.textContent = `Sent: ${patch.name}`;
     flashPatchCard(patch);
-  } else if (!midiConnected) {
-    alert('Please connect to a MIDI device first');
   }
 }
 

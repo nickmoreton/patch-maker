@@ -25,13 +25,29 @@
     <div class="midi-bar">
       <div class="midi-setting">
         <label>MIDI Output</label>
-        <select id="midiOutput">
-          <option value="">Select MIDI Device...</option>
-        </select>
-        <button id="refreshMidi" class="btn-icon-only" title="Refresh MIDI Devices">🔄</button>
+        <div class="midi-device-control" id="midiDeviceControl">
+          <button
+            id="midiDeviceButton"
+            class="midi-device-button"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="midiDeviceMenu"
+          >
+            <span class="midi-device-main">
+              <span class="status-dot disconnected" id="midiStatusDot"></span>
+              <span class="midi-device-copy">
+                <span class="midi-device-name" id="midiDeviceName">Select MIDI Device</span>
+                <span class="midi-device-status" id="midiDeviceStatus">Not Connected</span>
+              </span>
+            </span>
+            <span class="midi-device-chevron" aria-hidden="true">▾</span>
+          </button>
+          <div id="midiDeviceMenu" class="midi-device-menu" role="listbox" hidden></div>
+        </div>
       </div>
-      <div class="midi-setting">
-        <label>Channel</label>
+      <div class="midi-setting midi-setting-channel">
+        <label for="midiChannel">Channel</label>
         <select id="midiChannel">
           <option value="1">1</option>
           <option value="2">2</option>
@@ -51,15 +67,11 @@
           <option value="16">16</option>
         </select>
       </div>
-      <div class="midi-setting">
+      <div class="midi-setting midi-setting-auto-send">
         <label>
           <input type="checkbox" id="autoSend">
           Auto-send on select
         </label>
-      </div>
-      <div class="midi-status" id="midiStatus">
-        <span class="status-dot disconnected"></span>
-        <span class="status-text">Not Connected</span>
       </div>
     </div>
 

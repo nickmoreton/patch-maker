@@ -114,24 +114,6 @@ body {
   font-size: 0.85rem;
 }
 
-.btn-icon-only {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.btn-icon-only:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent);
-}
-
 /* MIDI Bar */
 .midi-bar {
   display: flex;
@@ -146,12 +128,17 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
 }
 
 .midi-setting label {
   font-size: 0.85rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.midi-setting-channel {
+  margin-left: auto;
 }
 
 .midi-setting select {
@@ -171,14 +158,124 @@ body {
   border-color: var(--accent);
 }
 
-.midi-status {
+.midi-device-control {
+  position: relative;
+  min-width: 280px;
+}
+
+.midi-device-button {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(37, 37, 66, 0.95), rgba(26, 26, 46, 0.98));
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  padding: 8px 16px;
-  background: var(--bg-secondary);
-  border-radius: 20px;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.midi-device-button:hover,
+.midi-device-control.open .midi-device-button {
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.midi-device-button:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.midi-device-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.midi-device-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.midi-device-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midi-device-status {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.midi-device-chevron {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  transition: transform 0.2s ease;
+}
+
+.midi-device-control.open .midi-device-chevron {
+  transform: rotate(180deg);
+}
+
+.midi-device-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(15, 15, 26, 0.98);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  z-index: 20;
+}
+
+.midi-device-option {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.midi-device-option:hover,
+.midi-device-option.selected {
+  background: var(--bg-hover);
+}
+
+.midi-device-option.selected {
+  outline: 1px solid var(--accent-dim);
+}
+
+.midi-device-option-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midi-device-empty {
+  padding: 10px 12px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 .status-dot {
@@ -203,9 +300,26 @@ body {
   50% { opacity: 0.5; }
 }
 
-.status-text {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+@media (max-width: 960px) {
+  .midi-bar {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .midi-setting {
+    width: 100%;
+  }
+
+  .midi-setting-channel,
+  .midi-setting-auto-send {
+    width: auto;
+    margin-left: 0;
+  }
+
+  .midi-device-control {
+    width: 100%;
+  }
 }
 
 /* Main Content */
