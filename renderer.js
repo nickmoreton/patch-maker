@@ -21,7 +21,6 @@ const elements = {
   midiDeviceName: document.getElementById('midiDeviceName'),
   midiDeviceStatus: document.getElementById('midiDeviceStatus'),
   midiChannel: document.getElementById('midiChannel'),
-  autoSend: document.getElementById('autoSend'),
   categorySearch: document.getElementById('categorySearch'),
   categoryList: document.getElementById('categoryList'),
   categoryCount: document.getElementById('categoryCount'),
@@ -38,7 +37,6 @@ const elements = {
 // Initialize
 async function init() {
   setupEventListeners();
-  loadPreferences();
   await loadDefaultPatches();
   await refreshMidiDevices();
 }
@@ -49,22 +47,9 @@ function setupEventListeners() {
   elements.midiDeviceMenu.addEventListener('click', handleMidiDeviceOptionClick);
   document.addEventListener('click', handleDocumentClick);
   document.addEventListener('keydown', handleDocumentKeydown);
-  elements.autoSend.addEventListener('change', savePreferences);
   elements.categorySearch.addEventListener('input', filterCategories);
   elements.patchSearch.addEventListener('input', filterPatches);
   elements.selectAllBtn.addEventListener('click', selectAllVisiblePatches);
-}
-
-// Preferences
-function loadPreferences() {
-  const autoSend = localStorage.getItem('autoSend');
-  if (autoSend !== null) {
-    elements.autoSend.checked = autoSend === 'true';
-  }
-}
-
-function savePreferences() {
-  localStorage.setItem('autoSend', elements.autoSend.checked);
 }
 
 // MIDI Functions
@@ -616,11 +601,6 @@ function selectPatch(patch) {
   selectedPatches = [];
   renderPatches();
   renderDetails();
-
-  // Auto-send if enabled and MIDI is connected
-  if (elements.autoSend.checked && midiConnected) {
-    sendPatch(patch);
-  }
 }
 
 function togglePatchSelection(patch) {

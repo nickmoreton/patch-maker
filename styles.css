@@ -311,8 +311,7 @@ body {
     width: 100%;
   }
 
-  .midi-setting-channel,
-  .midi-setting-auto-send {
+  .midi-setting-channel {
     width: auto;
     margin-left: 0;
   }
