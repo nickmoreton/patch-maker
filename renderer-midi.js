@@ -1,6 +1,7 @@
 (function attachRendererMidi(global) {
   const app = global.GenosApp;
   const { elements, state } = app;
+  const DEFAULT_MIDI_CHANNEL = 1;
 
   async function refreshMidiDevices() {
     if (state.midiRefreshPromise) {
@@ -208,8 +209,6 @@
   }
 
   async function sendPatch(patch) {
-    const channel = parseInt(elements.midiChannel.value, 10);
-
     if (!state.selectedMidiPortId || !state.midiConnected) {
       alert('Please connect to a MIDI device first');
       return;
@@ -218,7 +217,7 @@
     if (global.electronAPI) {
       try {
         const result = await global.electronAPI.sendPatch({
-          channel,
+          channel: DEFAULT_MIDI_CHANNEL,
           msb: patch.msb,
           lsb: patch.lsb,
           pc: patch.pc
@@ -235,7 +234,7 @@
     }
 
     if (state.webMidiOutput) {
-      const midiChannel = channel - 1;
+      const midiChannel = DEFAULT_MIDI_CHANNEL - 1;
       state.webMidiOutput.send([0xB0 + midiChannel, 0, patch.msb]);
       state.webMidiOutput.send([0xB0 + midiChannel, 32, patch.lsb]);
       state.webMidiOutput.send([0xC0 + midiChannel, patch.pc]);

@@ -11,7 +11,6 @@
       midiStatusDot: doc.getElementById('midiStatusDot'),
       midiDeviceName: doc.getElementById('midiDeviceName'),
       midiDeviceStatus: doc.getElementById('midiDeviceStatus'),
-      midiChannel: doc.getElementById('midiChannel'),
       categorySearch: doc.getElementById('categorySearch'),
       categoryList: doc.getElementById('categoryList'),
       categoryCount: doc.getElementById('categoryCount'),

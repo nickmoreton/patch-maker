@@ -137,27 +137,6 @@ body {
   font-weight: 500;
 }
 
-.midi-setting-channel {
-  margin-left: auto;
-}
-
-.midi-setting select {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  min-width: 200px;
-  cursor: pointer;
-}
-
-.midi-setting select:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
 .midi-device-control {
   position: relative;
   min-width: 280px;
@@ -309,11 +288,6 @@ body {
 
   .midi-setting {
     width: 100%;
-  }
-
-  .midi-setting-channel {
-    width: auto;
-    margin-left: 0;
   }
 
   .midi-device-control {
