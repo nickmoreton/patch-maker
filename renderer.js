@@ -16,7 +16,6 @@
     document.addEventListener('keydown', handleDocumentKeydown);
     elements.categorySearch.addEventListener('input', handleCategorySearchInput);
     elements.patchSearch.addEventListener('input', handlePatchSearchInput);
-    elements.selectAllBtn.addEventListener('click', handleSelectAllClick);
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
     elements.patchList.addEventListener('dblclick', handlePatchListDoubleClick);
@@ -62,10 +61,6 @@
     app.patches.updatePatchSearchTerm(event.target.value);
   }
 
-  function handleSelectAllClick() {
-    app.patches.selectAllVisiblePatches();
-  }
-
   function handleCategoryListClick(event) {
     const item = event.target.closest('[data-category]');
     if (!item) {
@@ -92,25 +87,10 @@
       return;
     }
 
-    if (event.target.closest('[data-action="toggle-select"]')) {
-      event.stopPropagation();
-      app.patches.togglePatchSelection(patch);
-      return;
-    }
-
-    if (event.metaKey || event.ctrlKey) {
-      app.patches.togglePatchSelection(patch);
-      return;
-    }
-
     app.patches.selectPatch(patch);
   }
 
   function handlePatchListDoubleClick(event) {
-    if (event.target.closest('[data-action="toggle-select"]')) {
-      return;
-    }
-
     const patch = getPatchFromEventTarget(event.target);
     if (!patch) {
       return;
@@ -126,20 +106,9 @@
     }
 
     switch (actionTarget.dataset.action) {
-      case 'batch-export':
-        app.midi.batchExportPresets(state.selectedPatches);
-        break;
-      case 'clear-selection':
-        app.patches.clearMultiSelect();
-        break;
       case 'send-selected':
         if (state.selectedPatch) {
           app.midi.sendPatch(state.selectedPatch);
-        }
-        break;
-      case 'export-selected':
-        if (state.selectedPatch) {
-          app.midi.exportLogicPreset(state.selectedPatch);
         }
         break;
       default:

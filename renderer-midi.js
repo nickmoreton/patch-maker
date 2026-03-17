@@ -244,79 +244,6 @@
     }
   }
 
-  async function exportLogicPreset(patch) {
-    if (!global.electronAPI) {
-      alert('Export function not available in web mode');
-      return;
-    }
-
-    try {
-      const result = await global.electronAPI.exportPST({
-        name: patch.name,
-        category: patch.category,
-        msb: patch.msb,
-        lsb: patch.lsb,
-        pc: patch.pc
-      });
-
-      if (result.success) {
-        const exportBtn = global.document.getElementById('exportBtn');
-        if (exportBtn) {
-          const originalText = exportBtn.innerHTML;
-          exportBtn.innerHTML = '<span class="btn-icon">✓</span>Exported!';
-          exportBtn.style.backgroundColor = 'var(--success)';
-          setTimeout(() => {
-            exportBtn.innerHTML = originalText;
-            exportBtn.style.backgroundColor = '';
-          }, 2000);
-        }
-      } else if (!result.canceled) {
-        alert('Error exporting preset: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      alert('Error exporting preset: ' + error.message);
-    }
-  }
-
-  async function batchExportPresets(patches) {
-    if (!global.electronAPI) {
-      alert('Export function not available in web mode');
-      return;
-    }
-
-    if (patches.length === 0) {
-      alert('No patches selected');
-      return;
-    }
-
-    const result = await global.electronAPI.exportBatchPST(patches.map(patch => ({
-      name: patch.name,
-      category: patch.category,
-      msb: patch.msb,
-      lsb: patch.lsb,
-      pc: patch.pc
-    })));
-
-    if (result.success) {
-      const exportBtn = global.document.getElementById('batchExportBtn');
-      if (exportBtn) {
-        const originalText = exportBtn.innerHTML;
-        exportBtn.innerHTML = `<span class="btn-icon">✓</span>Exported ${result.count} files!`;
-        exportBtn.style.backgroundColor = 'var(--success)';
-        setTimeout(() => {
-          exportBtn.innerHTML = originalText;
-          exportBtn.style.backgroundColor = '';
-        }, 3000);
-      }
-
-      setTimeout(() => {
-        app.patches.clearMultiSelect();
-      }, 3000);
-    } else if (!result.canceled) {
-      alert('Error exporting presets: ' + (result.error || 'Unknown error'));
-    }
-  }
-
   app.midi = {
     refreshMidiDevices,
     toggleMidiDeviceMenu,
@@ -328,8 +255,6 @@
     updateMidiStatus,
     updateMidiDeviceButton,
     connectedStateClass,
-    sendPatch,
-    exportLogicPreset,
-    batchExportPresets
+    sendPatch
   };
 })(window);

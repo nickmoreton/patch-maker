@@ -21,8 +21,7 @@
       patchList: doc.getElementById('patchList'),
       detailsContent: doc.getElementById('detailsContent'),
       patchesLoaded: doc.getElementById('patchesLoaded'),
-      lastSent: doc.getElementById('lastSent'),
-      selectAllBtn: doc.getElementById('selectAllBtn')
+      lastSent: doc.getElementById('lastSent')
     };
   }
 
@@ -66,58 +65,12 @@
     return state.midiPorts.find(port => port.id === state.selectedMidiPortId) || null;
   }
 
-  function areAllVisiblePatchesSelected(state) {
-    const visiblePatches = getVisiblePatches(state);
-    return (
-      visiblePatches.length > 0 &&
-      visiblePatches.every(patch =>
-        state.selectedPatches.some(selectedPatch => selectedPatch.id === patch.id)
-      )
-    );
-  }
-
-  function togglePatchSelectionList(selectedPatches, patch) {
-    const index = selectedPatches.findIndex(selectedPatch => selectedPatch.id === patch.id);
-    if (index >= 0) {
-      return selectedPatches.filter(selectedPatch => selectedPatch.id !== patch.id);
-    }
-
-    return [...selectedPatches, patch];
-  }
-
-  function toggleVisiblePatchSelection(selectedPatches, visiblePatches) {
-    const allVisibleSelected = (
-      visiblePatches.length > 0 &&
-      visiblePatches.every(patch =>
-        selectedPatches.some(selectedPatch => selectedPatch.id === patch.id)
-      )
-    );
-
-    if (allVisibleSelected) {
-      return selectedPatches.filter(selectedPatch =>
-        !visiblePatches.some(patch => patch.id === selectedPatch.id)
-      );
-    }
-
-    const selectedIds = new Set(selectedPatches.map(selectedPatch => selectedPatch.id));
-    const nextSelection = selectedPatches.slice();
-
-    visiblePatches.forEach(patch => {
-      if (!selectedIds.has(patch.id)) {
-        nextSelection.push(patch);
-      }
-    });
-
-    return nextSelection;
-  }
-
   const elements = createElements(global.document);
   const state = {
     patches: [],
     categories: [],
     selectedCategory: null,
     selectedPatch: null,
-    selectedPatches: [],
     midiConnected: false,
     webMidiOutput: null,
     midiRefreshPromise: null,
@@ -137,10 +90,7 @@
     buildPatchCollection,
     getVisibleCategories: () => getVisibleCategories(state),
     getVisiblePatches: () => getVisiblePatches(state),
-    getSelectedMidiPort: () => getSelectedMidiPort(state),
-    areAllVisiblePatchesSelected: () => areAllVisiblePatchesSelected(state),
-    togglePatchSelectionList,
-    toggleVisiblePatchSelection
+    getSelectedMidiPort: () => getSelectedMidiPort(state)
   };
   global.GenosApp = app;
 
@@ -149,10 +99,7 @@
       buildPatchCollection,
       getVisibleCategories,
       getVisiblePatches,
-      getSelectedMidiPort,
-      areAllVisiblePatchesSelected,
-      togglePatchSelectionList,
-      toggleVisiblePatchSelection
+      getSelectedMidiPort
     };
   }
 })(typeof window !== 'undefined' ? window : globalThis);

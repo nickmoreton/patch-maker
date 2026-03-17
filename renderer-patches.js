@@ -42,31 +42,6 @@
 
   function selectPatch(patch) {
     state.selectedPatch = patch;
-    state.selectedPatches = [];
-    app.view.renderPatches();
-    app.view.renderDetails();
-  }
-
-  function togglePatchSelection(patch) {
-    state.selectedPatches = app.selectors.togglePatchSelectionList(state.selectedPatches, patch);
-    state.selectedPatch = null;
-    app.view.renderPatches();
-    app.view.renderDetails();
-  }
-
-  function clearMultiSelect() {
-    state.selectedPatches = [];
-    app.view.renderPatches();
-    app.view.renderDetails();
-  }
-
-  function selectAllVisiblePatches() {
-    const visiblePatches = app.selectors.getVisiblePatches();
-    state.selectedPatches = app.selectors.toggleVisiblePatchSelection(
-      state.selectedPatches,
-      visiblePatches
-    );
-    state.selectedPatch = null;
     app.view.renderPatches();
     app.view.renderDetails();
   }
@@ -86,9 +61,6 @@
     loadPatchData,
     selectCategory,
     selectPatch,
-    togglePatchSelection,
-    clearMultiSelect,
-    selectAllVisiblePatches,
     updateCategorySearchTerm,
     updatePatchSearchTerm
   };

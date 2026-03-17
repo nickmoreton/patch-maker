@@ -5,10 +5,7 @@ const {
   buildPatchCollection,
   getVisibleCategories,
   getVisiblePatches,
-  getSelectedMidiPort,
-  areAllVisiblePatchesSelected,
-  togglePatchSelectionList,
-  toggleVisiblePatchSelection
+  getSelectedMidiPort
 } = require('../renderer-state');
 
 function createState(overrides = {}) {
@@ -17,7 +14,6 @@ function createState(overrides = {}) {
     categories: [],
     selectedCategory: null,
     selectedPatch: null,
-    selectedPatches: [],
     midiPorts: [],
     selectedMidiPortId: '',
     categorySearchTerm: '',
@@ -61,40 +57,14 @@ test('getVisibleCategories and getVisiblePatches apply current filters', () => {
   );
 });
 
-test('getSelectedMidiPort and areAllVisiblePatchesSelected derive state correctly', () => {
-  const patches = [
-    { id: 0, name: 'Warm Pad', category: 'Pad' },
-    { id: 1, name: 'Soft Piano', category: 'Piano' }
-  ];
+test('getSelectedMidiPort derives state correctly', () => {
   const state = createState({
-    patches,
     midiPorts: [
       { id: '1', name: 'Genos Port' },
       { id: '2', name: 'Other Port' }
     ],
-    selectedMidiPortId: '1',
-    selectedPatches: patches.slice()
+    selectedMidiPortId: '1'
   });
 
   assert.deepEqual(getSelectedMidiPort(state), { id: '1', name: 'Genos Port' });
-  assert.equal(areAllVisiblePatchesSelected(state), true);
-});
-
-test('selection helpers toggle single patches and visible patch sets', () => {
-  const patchA = { id: 0, name: 'Warm Pad', category: 'Pad' };
-  const patchB = { id: 1, name: 'Bright Pad', category: 'Pad' };
-  const patchC = { id: 2, name: 'Soft Piano', category: 'Piano' };
-
-  let selectedPatches = togglePatchSelectionList([], patchA);
-  selectedPatches = togglePatchSelectionList(selectedPatches, patchB);
-  assert.deepEqual(selectedPatches.map(patch => patch.id), [0, 1]);
-
-  selectedPatches = togglePatchSelectionList(selectedPatches, patchA);
-  assert.deepEqual(selectedPatches.map(patch => patch.id), [1]);
-
-  selectedPatches = toggleVisiblePatchSelection(selectedPatches, [patchA, patchB, patchC]);
-  assert.deepEqual(selectedPatches.map(patch => patch.id), [1, 0, 2]);
-
-  selectedPatches = toggleVisiblePatchSelection(selectedPatches, [patchA, patchB, patchC]);
-  assert.deepEqual(selectedPatches, []);
 });

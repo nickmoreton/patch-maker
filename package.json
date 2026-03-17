@@ -41,7 +41,6 @@
       "renderer-patches.js",
       "renderer-view.js",
       "preload.js",
-      "pst-generator.js",
       "styles.css",
       "patches.json",
       "assets/**"
