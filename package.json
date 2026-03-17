@@ -42,6 +42,7 @@
       "renderer-view.js",
       "preload.js",
       "styles.css",
+      "styles/**",
       "patches.json",
       "assets/**"
     ]
