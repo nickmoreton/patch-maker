@@ -1,6 +1,7 @@
 (function attachRendererView(global) {
   const app = global.GenosApp;
   const { elements, state } = app;
+  const CHANNEL_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
 
   function renderMidiDeviceMenu(message) {
     const optionsMarkup = [
@@ -127,6 +128,10 @@
       elements.selectedPatchCount.textContent = selectedPatches.length;
     }
 
+    if (elements.selectedPatchSortButton) {
+      elements.selectedPatchSortButton.disabled = selectedPatches.length < 2;
+    }
+
     if (selectedPatches.length === 0) {
       elements.detailsContent.innerHTML = `
         <div class="no-selection">
@@ -181,16 +186,37 @@
           </div>
         ` : ''}
 
-        <button
-          class="btn btn-primary send-btn"
-          type="button"
-          data-action="send-selected"
-          data-id="${patch.id}"
-          ${!state.midiConnected ? 'disabled' : ''}
-        >
-          <span class="btn-icon">🎵</span>
-          Send to Genos
-        </button>
+        <div class="selected-patch-send-row">
+          <label class="selected-patch-channel-control" data-prevent-toggle="true">
+            <span class="selected-patch-channel-label">MIDI Ch</span>
+            <select
+              class="selected-patch-channel-select"
+              data-channel-select="true"
+              data-id="${patch.id}"
+              aria-label="MIDI channel for ${patch.name}"
+            >
+              ${CHANNEL_OPTIONS.map(channel => `
+                <option
+                  value="${channel}"
+                  ${app.selectors.getSelectedPatchChannel(patch.id) === channel ? 'selected' : ''}
+                >
+                  ${channel}
+                </option>
+              `).join('')}
+            </select>
+          </label>
+
+          <button
+            class="btn btn-primary send-btn"
+            type="button"
+            data-action="send-selected"
+            data-id="${patch.id}"
+            ${!state.midiConnected ? 'disabled' : ''}
+          >
+            <span class="btn-icon">🎵</span>
+            Send to Genos
+          </button>
+        </div>
       </article>
     `).join('');
   }

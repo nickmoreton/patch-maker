@@ -20,7 +20,9 @@
     elements.patchSearch.addEventListener('input', handlePatchSearchInput);
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
+    elements.selectedPatchSortButton.addEventListener('click', handleSelectedPatchSortClick);
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
+    elements.detailsContent.addEventListener('change', handleDetailsContentChange);
   }
 
   function handleThemeControlClick(event) {
@@ -100,6 +102,10 @@
     app.patches.togglePatchSelection(patch);
   }
 
+  function handleSelectedPatchSortClick() {
+    app.patches.sortSelectedPatchesByChannel();
+  }
+
   function handleDetailsContentClick(event) {
     const actionTarget = event.target.closest('[data-action]');
     if (actionTarget) {
@@ -122,6 +128,10 @@
       }
     }
 
+    if (event.target.closest('[data-prevent-toggle="true"]')) {
+      return;
+    }
+
     const patchCard = event.target.closest('.selected-patch-card[data-id]');
     if (!patchCard) {
       return;
@@ -129,6 +139,16 @@
 
     const patchId = parseInt(patchCard.dataset.id, 10);
     app.patches.toggleSelectedPatchExpanded(patchId);
+  }
+
+  function handleDetailsContentChange(event) {
+    const channelSelect = event.target.closest('[data-channel-select="true"]');
+    if (!channelSelect) {
+      return;
+    }
+
+    const patchId = parseInt(channelSelect.dataset.id, 10);
+    app.patches.updateSelectedPatchChannel(patchId, channelSelect.value);
   }
 
   app.init = init;

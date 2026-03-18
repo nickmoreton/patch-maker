@@ -19,6 +19,7 @@
       patchCount: doc.getElementById('patchCount'),
       patchSearch: doc.getElementById('patchSearch'),
       selectedPatchCount: doc.getElementById('selectedPatchCount'),
+      selectedPatchSortButton: doc.getElementById('selectedPatchSortButton'),
       patchList: doc.getElementById('patchList'),
       detailsContent: doc.getElementById('detailsContent'),
       patchesLoaded: doc.getElementById('patchesLoaded'),
@@ -73,6 +74,30 @@
       .filter(Boolean);
   }
 
+  function getSelectedPatchChannel(state, patchId) {
+    return state.selectedPatchChannelsById[String(patchId)] || null;
+  }
+
+  function getUsedMidiChannels(state) {
+    return new Set(
+      state.selectedPatchIds
+        .map(patchId => getSelectedPatchChannel(state, patchId))
+        .filter(channel => Number.isInteger(channel))
+    );
+  }
+
+  function getNextAvailableMidiChannel(state) {
+    const usedChannels = getUsedMidiChannels(state);
+
+    for (let channel = 1; channel <= 16; channel += 1) {
+      if (!usedChannels.has(channel)) {
+        return channel;
+      }
+    }
+
+    return null;
+  }
+
   function isPatchSelected(state, patchId) {
     return state.selectedPatchIds.includes(patchId);
   }
@@ -108,6 +133,7 @@
     selectedCategory: null,
     selectedPatchIds: [],
     expandedSelectedPatchIds: [],
+    selectedPatchChannelsById: {},
     midiConnected: false,
     webMidiOutput: null,
     midiRefreshPromise: null,
@@ -133,6 +159,8 @@
     getVisiblePatches: () => getVisiblePatches(state),
     getSelectedMidiPort: () => getSelectedMidiPort(state),
     getSelectedPatches: () => getSelectedPatches(state),
+    getSelectedPatchChannel: patchId => getSelectedPatchChannel(state, patchId),
+    getNextAvailableMidiChannel: () => getNextAvailableMidiChannel(state),
     isPatchSelected: patchId => isPatchSelected(state, patchId),
     isSelectedPatchExpanded: patchId => isSelectedPatchExpanded(state, patchId)
   };
@@ -150,6 +178,8 @@
       getVisiblePatches,
       getSelectedMidiPort,
       getSelectedPatches,
+      getSelectedPatchChannel,
+      getNextAvailableMidiChannel,
       isPatchSelected,
       toggleSelectedPatchIds,
       isSelectedPatchExpanded,

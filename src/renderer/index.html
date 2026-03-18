@@ -94,8 +94,18 @@
       <!-- Patch Details -->
       <aside class="details-panel">
         <div class="details-header">
-          <h2>Selected Patches</h2>
-          <span class="selected-patch-count" id="selectedPatchCount">0</span>
+          <div class="details-header-copy">
+            <h2>Selected Patches</h2>
+            <span class="selected-patch-count" id="selectedPatchCount">0</span>
+          </div>
+          <button
+            type="button"
+            class="selected-patch-sort-button"
+            id="selectedPatchSortButton"
+            disabled
+          >
+            Sort by MIDI Ch
+          </button>
         </div>
         <div class="details-content" id="detailsContent">
           <div class="no-selection">
