@@ -26,6 +26,7 @@
     state.patches = patchCollection.patches;
     state.categories = patchCollection.categories;
     state.selectedPatchIds = [];
+    state.expandedSelectedPatchIds = [];
 
     app.view.renderCategories();
     app.view.renderPatches();
@@ -43,7 +44,11 @@
   }
 
   function togglePatchSelection(patch) {
+    const isRemoving = app.selectors.isPatchSelected(patch.id);
     state.selectedPatchIds = app.selection.toggleSelectedPatchIds(patch.id);
+    if (isRemoving) {
+      state.expandedSelectedPatchIds = app.selection.collapseRemovedSelectedPatch(patch.id);
+    }
     app.view.renderPatches();
     app.view.renderSelectedPatches();
   }
@@ -54,7 +59,17 @@
     }
 
     state.selectedPatchIds = app.selection.toggleSelectedPatchIds(patchId);
+    state.expandedSelectedPatchIds = app.selection.collapseRemovedSelectedPatch(patchId);
     app.view.renderPatches();
+    app.view.renderSelectedPatches();
+  }
+
+  function toggleSelectedPatchExpanded(patchId) {
+    if (!app.selectors.isPatchSelected(patchId)) {
+      return;
+    }
+
+    state.expandedSelectedPatchIds = app.selection.toggleSelectedPatchExpanded(patchId);
     app.view.renderSelectedPatches();
   }
 
@@ -74,6 +89,7 @@
     selectCategory,
     togglePatchSelection,
     removeSelectedPatch,
+    toggleSelectedPatchExpanded,
     updateCategorySearchTerm,
     updatePatchSearchTerm
   };

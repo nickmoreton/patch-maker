@@ -138,37 +138,48 @@
     }
 
     elements.detailsContent.innerHTML = selectedPatches.map(patch => `
-      <article class="selected-patch-card" data-id="${patch.id}">
+      <article
+        class="selected-patch-card ${app.selectors.isSelectedPatchExpanded(patch.id) ? 'expanded' : ''}"
+        data-id="${patch.id}"
+        aria-expanded="${app.selectors.isSelectedPatchExpanded(patch.id) ? 'true' : 'false'}"
+      >
         <div class="selected-patch-top">
-          <div class="patch-details">
+          <div class="patch-details selected-patch-summary">
             <div class="detail-category">${patch.category}</div>
             <div class="detail-name">${patch.name}</div>
           </div>
-          <button
-            type="button"
-            class="selected-patch-remove"
-            data-action="remove-selected"
-            data-id="${patch.id}"
-            aria-label="Remove ${patch.name} from selected patches"
-          >
-            Remove
-          </button>
+          <div class="selected-patch-actions">
+            <span class="selected-patch-toggle" aria-hidden="true">
+              ${app.selectors.isSelectedPatchExpanded(patch.id) ? 'Hide settings' : 'Show settings'}
+            </span>
+            <button
+              type="button"
+              class="selected-patch-remove"
+              data-action="remove-selected"
+              data-id="${patch.id}"
+              aria-label="Remove ${patch.name} from selected patches"
+            >
+              Remove
+            </button>
+          </div>
         </div>
 
-        <div class="detail-values">
-          <div class="detail-row">
-            <span class="label">Program</span>
-            <span class="value">${patch.pc}</span>
+        ${app.selectors.isSelectedPatchExpanded(patch.id) ? `
+          <div class="detail-values">
+            <div class="detail-row">
+              <span class="label">Program</span>
+              <span class="value">${patch.pc}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Bank LSB</span>
+              <span class="value">${patch.lsb}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Bank MSB</span>
+              <span class="value">${patch.msb}</span>
+            </div>
           </div>
-          <div class="detail-row">
-            <span class="label">Bank LSB</span>
-            <span class="value">${patch.lsb}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Bank MSB</span>
-            <span class="value">${patch.msb}</span>
-          </div>
-        </div>
+        ` : ''}
 
         <button
           class="btn btn-primary send-btn"

@@ -8,7 +8,10 @@ const {
   getSelectedMidiPort,
   getSelectedPatches,
   isPatchSelected,
-  toggleSelectedPatchIds
+  toggleSelectedPatchIds,
+  isSelectedPatchExpanded,
+  toggleSelectedPatchExpanded,
+  collapseRemovedSelectedPatch
 } = require('../src/renderer/scripts/renderer-state');
 
 function createState(overrides = {}) {
@@ -17,6 +20,7 @@ function createState(overrides = {}) {
     categories: [],
     selectedCategory: null,
     selectedPatchIds: [],
+    expandedSelectedPatchIds: [],
     midiPorts: [],
     selectedMidiPortId: '',
     categorySearchTerm: '',
@@ -122,4 +126,44 @@ test('isPatchSelected and visible patches remain independent', () => {
     getSelectedPatches(state).map(patch => patch.name),
     ['Soft Piano', 'Bright Pad']
   );
+});
+
+test('toggleSelectedPatchExpanded adds and removes expanded ids uniquely', () => {
+  const state = createState({
+    expandedSelectedPatchIds: [1, 3]
+  });
+
+  assert.deepEqual(toggleSelectedPatchExpanded(state, 5), [1, 3, 5]);
+  assert.deepEqual(toggleSelectedPatchExpanded(state, 3), [1]);
+});
+
+test('collapseRemovedSelectedPatch clears removed ids from expanded state only', () => {
+  const state = createState({
+    selectedPatchIds: [2, 4],
+    expandedSelectedPatchIds: [1, 2, 5]
+  });
+
+  assert.deepEqual(collapseRemovedSelectedPatch(state, 2), [1, 5]);
+  assert.deepEqual(state.selectedPatchIds, [2, 4]);
+});
+
+test('expanded state does not affect selected patch ordering or selection membership', () => {
+  const patches = [
+    { id: 0, name: 'Warm Pad', category: 'Pad', pc: 1, lsb: 2, msb: 3 },
+    { id: 1, name: 'Soft Piano', category: 'Piano', pc: 4, lsb: 5, msb: 6 },
+    { id: 2, name: 'Bright Pad', category: 'Pad', pc: 7, lsb: 8, msb: 9 }
+  ];
+  const state = createState({
+    patches,
+    selectedPatchIds: [2, 0],
+    expandedSelectedPatchIds: [0]
+  });
+
+  assert.equal(isSelectedPatchExpanded(state, 0), true);
+  assert.equal(isSelectedPatchExpanded(state, 2), false);
+  assert.deepEqual(
+    getSelectedPatches(state).map(patch => patch.name),
+    ['Bright Pad', 'Warm Pad']
+  );
+  assert.equal(isPatchSelected(state, 2), true);
 });

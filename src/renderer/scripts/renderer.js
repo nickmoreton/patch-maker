@@ -102,27 +102,33 @@
 
   function handleDetailsContentClick(event) {
     const actionTarget = event.target.closest('[data-action]');
-    if (!actionTarget) {
+    if (actionTarget) {
+      const patchId = parseInt(actionTarget.dataset.id, 10);
+      const patch = state.patches.find(candidate => candidate.id === patchId) || null;
+
+      switch (actionTarget.dataset.action) {
+        case 'send-selected':
+          if (patch) {
+            app.midi.sendPatch(patch);
+          }
+          return;
+        case 'remove-selected':
+          if (patch) {
+            app.patches.removeSelectedPatch(patch.id);
+          }
+          return;
+        default:
+          return;
+      }
+    }
+
+    const patchCard = event.target.closest('.selected-patch-card[data-id]');
+    if (!patchCard) {
       return;
     }
 
-    const patchId = parseInt(actionTarget.dataset.id, 10);
-    const patch = state.patches.find(candidate => candidate.id === patchId) || null;
-
-    switch (actionTarget.dataset.action) {
-      case 'send-selected':
-        if (patch) {
-          app.midi.sendPatch(patch);
-        }
-        break;
-      case 'remove-selected':
-        if (patch) {
-          app.patches.removeSelectedPatch(patch.id);
-        }
-        break;
-      default:
-        break;
-    }
+    const patchId = parseInt(patchCard.dataset.id, 10);
+    app.patches.toggleSelectedPatchExpanded(patchId);
   }
 
   app.init = init;

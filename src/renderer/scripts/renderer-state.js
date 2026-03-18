@@ -85,12 +85,29 @@
     return [...state.selectedPatchIds, patchId];
   }
 
+  function isSelectedPatchExpanded(state, patchId) {
+    return state.expandedSelectedPatchIds.includes(patchId);
+  }
+
+  function toggleSelectedPatchExpanded(state, patchId) {
+    if (isSelectedPatchExpanded(state, patchId)) {
+      return state.expandedSelectedPatchIds.filter(expandedPatchId => expandedPatchId !== patchId);
+    }
+
+    return [...state.expandedSelectedPatchIds, patchId];
+  }
+
+  function collapseRemovedSelectedPatch(state, patchId) {
+    return state.expandedSelectedPatchIds.filter(expandedPatchId => expandedPatchId !== patchId);
+  }
+
   const elements = createElements(global.document);
   const state = {
     patches: [],
     categories: [],
     selectedCategory: null,
     selectedPatchIds: [],
+    expandedSelectedPatchIds: [],
     midiConnected: false,
     webMidiOutput: null,
     midiRefreshPromise: null,
@@ -116,10 +133,13 @@
     getVisiblePatches: () => getVisiblePatches(state),
     getSelectedMidiPort: () => getSelectedMidiPort(state),
     getSelectedPatches: () => getSelectedPatches(state),
-    isPatchSelected: patchId => isPatchSelected(state, patchId)
+    isPatchSelected: patchId => isPatchSelected(state, patchId),
+    isSelectedPatchExpanded: patchId => isSelectedPatchExpanded(state, patchId)
   };
   app.selection = {
-    toggleSelectedPatchIds: patchId => toggleSelectedPatchIds(state, patchId)
+    toggleSelectedPatchIds: patchId => toggleSelectedPatchIds(state, patchId),
+    toggleSelectedPatchExpanded: patchId => toggleSelectedPatchExpanded(state, patchId),
+    collapseRemovedSelectedPatch: patchId => collapseRemovedSelectedPatch(state, patchId)
   };
   global.GenosApp = app;
 
@@ -131,7 +151,10 @@
       getSelectedMidiPort,
       getSelectedPatches,
       isPatchSelected,
-      toggleSelectedPatchIds
+      toggleSelectedPatchIds,
+      isSelectedPatchExpanded,
+      toggleSelectedPatchExpanded,
+      collapseRemovedSelectedPatch
     };
   }
 })(typeof window !== 'undefined' ? window : globalThis);
