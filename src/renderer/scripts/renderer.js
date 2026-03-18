@@ -21,6 +21,7 @@
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
     elements.selectedPatchSortButton.addEventListener('click', handleSelectedPatchSortClick);
+    elements.selectedPatchSendAllButton.addEventListener('click', handleSelectedPatchSendAllClick);
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
     elements.detailsContent.addEventListener('change', handleDetailsContentChange);
   }
@@ -103,7 +104,19 @@
   }
 
   function handleSelectedPatchSortClick() {
+    if (state.bulkSendInProgress) {
+      return;
+    }
+
     app.patches.sortSelectedPatchesByChannel();
+  }
+
+  function handleSelectedPatchSendAllClick() {
+    if (state.bulkSendInProgress) {
+      return;
+    }
+
+    app.midi.sendSelectedPatches();
   }
 
   function handleDetailsContentClick(event) {
@@ -114,7 +127,7 @@
 
       switch (actionTarget.dataset.action) {
         case 'send-selected':
-          if (patch) {
+          if (patch && !state.bulkSendInProgress) {
             app.midi.sendPatch(patch);
           }
           return;

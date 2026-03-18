@@ -98,14 +98,24 @@
             <h2>Selected Patches</h2>
             <span class="selected-patch-count" id="selectedPatchCount">0</span>
           </div>
-          <button
-            type="button"
-            class="selected-patch-sort-button"
-            id="selectedPatchSortButton"
-            disabled
-          >
-            Sort by MIDI Ch
-          </button>
+          <div class="details-header-actions">
+            <button
+              type="button"
+              class="selected-patch-sort-button"
+              id="selectedPatchSortButton"
+              disabled
+            >
+              Sort by MIDI Ch
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary selected-patch-bulk-button"
+              id="selectedPatchSendAllButton"
+              disabled
+            >
+              Send All to Genos
+            </button>
+          </div>
         </div>
         <div class="details-content" id="detailsContent">
           <div class="no-selection">

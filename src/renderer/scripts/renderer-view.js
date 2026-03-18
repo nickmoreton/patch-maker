@@ -124,13 +124,26 @@
   function renderSelectedPatches() {
     app.patches.normalizeSelectedPatchChannels();
     const selectedPatches = app.selectors.getSelectedPatches();
+    const hasMultipleSelectedPatches = selectedPatches.length >= 2;
+    const canBulkSend = (
+      selectedPatches.length > 0 &&
+      state.midiConnected &&
+      !state.bulkSendInProgress
+    );
 
     if (elements.selectedPatchCount) {
       elements.selectedPatchCount.textContent = selectedPatches.length;
     }
 
     if (elements.selectedPatchSortButton) {
-      elements.selectedPatchSortButton.disabled = selectedPatches.length < 2;
+      elements.selectedPatchSortButton.disabled = hasMultipleSelectedPatches === false || state.bulkSendInProgress;
+    }
+
+    if (elements.selectedPatchSendAllButton) {
+      elements.selectedPatchSendAllButton.disabled = !canBulkSend;
+      elements.selectedPatchSendAllButton.textContent = state.bulkSendInProgress
+        ? 'Sending All...'
+        : 'Send All to Genos';
     }
 
     if (selectedPatches.length === 0) {
@@ -213,7 +226,7 @@
             type="button"
             data-action="send-selected"
             data-id="${patch.id}"
-            ${!state.midiConnected ? 'disabled' : ''}
+            ${!state.midiConnected || state.bulkSendInProgress ? 'disabled' : ''}
           >
             <span class="btn-icon">🎵</span>
             Send to Genos

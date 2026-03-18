@@ -115,6 +115,14 @@
   min-width: 0;
 }
 
+.details-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .details-header h2 {
   font-size: 1rem;
   font-weight: 600;
@@ -161,6 +169,15 @@
 }
 
 .selected-patch-sort-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selected-patch-bulk-button {
+  white-space: nowrap;
+}
+
+.selected-patch-bulk-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -359,4 +376,17 @@
 .send-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+@media (max-width: 960px) {
+  .details-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .selected-patch-sort-button,
+  .selected-patch-bulk-button {
+    flex: 1 1 180px;
+    justify-content: center;
+  }
 }

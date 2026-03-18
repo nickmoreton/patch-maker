@@ -1,5 +1,60 @@
+const BULK_SEND_DELAY_MS = 50;
+
+function wait(durationMs) {
+  return new Promise(resolve => {
+    setTimeout(resolve, durationMs);
+  });
+}
+
+async function sendPatchesSequentially({
+  patches,
+  sendPatch,
+  onProgress,
+  onSuccess,
+  waitFor = wait,
+  delayMs = BULK_SEND_DELAY_MS
+}) {
+  const queue = Array.isArray(patches) ? patches : [];
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const entry = queue[index];
+
+    if (onProgress) {
+      onProgress(entry, index, queue.length);
+    }
+
+    const result = await sendPatch(entry, index, queue.length);
+    if (!result || result.success !== true) {
+      return {
+        success: false,
+        error: result && result.error ? result.error : 'Unable to send patch',
+        failedEntry: entry,
+        failedIndex: index,
+        total: queue.length
+      };
+    }
+
+    if (onSuccess) {
+      onSuccess(entry, index, queue.length);
+    }
+
+    if (delayMs > 0 && index < queue.length - 1) {
+      await waitFor(delayMs);
+    }
+  }
+
+  return {
+    success: true,
+    total: queue.length
+  };
+}
+
 (function attachRendererMidi(global) {
   const app = global.GenosApp;
+  if (!app) {
+    return;
+  }
+
   const { elements, state } = app;
 
   async function refreshMidiDevices() {
@@ -207,40 +262,143 @@
     return state.midiConnected ? 'connected' : 'disconnected';
   }
 
-  async function sendPatch(patch) {
-    if (!state.selectedMidiPortId || !state.midiConnected) {
-      alert('Please connect to a MIDI device first');
+  function createPatchPayload(patch, channel) {
+    return {
+      channel,
+      msb: patch.msb,
+      lsb: patch.lsb,
+      pc: patch.pc
+    };
+  }
+
+  function updateLastSentStatus(message) {
+    if (!elements.lastSent) {
       return;
     }
 
-    const channel = app.selectors.getSelectedPatchChannel(patch.id) || 1;
+    elements.lastSent.textContent = message;
+  }
+
+  function getConnectionFailureResult() {
+    return {
+      success: false,
+      error: 'Please connect to a MIDI device first',
+      requiresConnection: true
+    };
+  }
+
+  async function transmitPatchPayload(payload) {
+    if (!state.selectedMidiPortId || !state.midiConnected) {
+      return getConnectionFailureResult();
+    }
+
+    let electronSendError = '';
 
     if (global.electronAPI) {
       try {
-        const result = await global.electronAPI.sendPatch({
-          channel,
-          msb: patch.msb,
-          lsb: patch.lsb,
-          pc: patch.pc
-        });
-
+        const result = await global.electronAPI.sendPatch(payload);
         if (result.success) {
-          elements.lastSent.textContent = `Sent: ${patch.name}`;
-          app.view.flashPatchCard(patch);
-          return;
+          return result;
         }
+
+        electronSendError = result && result.error ? result.error : '';
       } catch (error) {
         console.log('Electron send failed, trying Web MIDI');
+        electronSendError = error && error.message ? error.message : '';
       }
     }
 
     if (state.webMidiOutput) {
-      const midiChannel = channel - 1;
-      state.webMidiOutput.send([0xB0 + midiChannel, 0, patch.msb]);
-      state.webMidiOutput.send([0xB0 + midiChannel, 32, patch.lsb]);
-      state.webMidiOutput.send([0xC0 + midiChannel, patch.pc]);
-      elements.lastSent.textContent = `Sent: ${patch.name}`;
-      app.view.flashPatchCard(patch);
+      try {
+        const midiChannel = payload.channel - 1;
+        state.webMidiOutput.send([0xB0 + midiChannel, 0, payload.msb]);
+        state.webMidiOutput.send([0xB0 + midiChannel, 32, payload.lsb]);
+        state.webMidiOutput.send([0xC0 + midiChannel, payload.pc]);
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error && error.message ? error.message : 'Unable to send patch'
+        };
+      }
+    }
+
+    return {
+      success: false,
+      error: electronSendError || 'No MIDI output available'
+    };
+  }
+
+  async function sendPatch(patch) {
+    const channel = app.selectors.getSelectedPatchChannel(patch.id) || 1;
+    const result = await transmitPatchPayload(createPatchPayload(patch, channel));
+
+    if (!result.success) {
+      updateLastSentStatus(result.error);
+      if (result.requiresConnection) {
+        alert(result.error);
+      }
+      return result;
+    }
+
+    updateLastSentStatus(`Sent: ${patch.name}`);
+    app.view.flashPatchCard(patch);
+    return result;
+  }
+
+  async function sendSelectedPatches() {
+    if (state.bulkSendInProgress) {
+      return { success: false, error: 'Bulk send already in progress' };
+    }
+
+    const selectedPatches = app.selectors.getSelectedPatches();
+    if (selectedPatches.length === 0) {
+      return { success: false, error: 'No patches selected' };
+    }
+
+    if (!state.selectedMidiPortId || !state.midiConnected) {
+      const result = getConnectionFailureResult();
+      updateLastSentStatus(result.error);
+      alert(result.error);
+      return result;
+    }
+
+    const patchQueue = selectedPatches.map(patch => ({
+      patch,
+      channel: app.selectors.getSelectedPatchChannel(patch.id) || 1
+    }));
+
+    state.bulkSendInProgress = true;
+    app.view.renderSelectedPatches();
+
+    try {
+      const result = await sendPatchesSequentially({
+        patches: patchQueue,
+        delayMs: BULK_SEND_DELAY_MS,
+        onProgress(entry, index, total) {
+          updateLastSentStatus(`Sending ${index + 1}/${total}: ${entry.patch.name}`);
+        },
+        onSuccess(entry) {
+          app.view.flashPatchCard(entry.patch);
+        },
+        sendPatch(entry) {
+          return transmitPatchPayload(createPatchPayload(entry.patch, entry.channel));
+        }
+      });
+
+      if (!result.success) {
+        const failedPatchName = result.failedEntry && result.failedEntry.patch
+          ? result.failedEntry.patch.name
+          : 'patch';
+        updateLastSentStatus(`Failed sending ${failedPatchName}: ${result.error}`);
+        return result;
+      }
+
+      updateLastSentStatus(`Sent ${result.total} patches`);
+      return result;
+    } finally {
+      state.bulkSendInProgress = false;
+      app.view.renderSelectedPatches();
     }
   }
 
@@ -255,6 +413,15 @@
     updateMidiStatus,
     updateMidiDeviceButton,
     connectedStateClass,
-    sendPatch
+    sendPatch,
+    sendSelectedPatches
   };
-})(window);
+})(typeof window !== 'undefined' ? window : globalThis);
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    BULK_SEND_DELAY_MS,
+    wait,
+    sendPatchesSequentially
+  };
+}
