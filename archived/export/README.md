@@ -6,8 +6,8 @@ The preserved implementation lives in [`pst-generator.js`](pst-generator.js) so 
 
 To restore the feature:
 
-1. Re-add the export bridge methods in [`preload.js`](../../preload.js).
-2. Re-add the `export-pst` and `export-batch-pst` IPC handlers in [`main.js`](../../main.js) and require this archived generator there.
+1. Re-add the export bridge methods in [`src/electron/preload.js`](../../src/electron/preload.js).
+2. Re-add the `export-pst` and `export-batch-pst` IPC handlers in [`src/electron/main.js`](../../src/electron/main.js) and require this archived generator there.
 3. Reintroduce the export controls and any desired selection UI in the renderer files.
 
 This folder is repo-only and is not included in the packaged app.

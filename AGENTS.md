@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is a small Electron app with root-level entry points instead of a `src/` directory. `main.js` owns the Electron lifecycle, window creation, MIDI IPC, and file dialogs. `preload.js` exposes the safe renderer bridge, and `renderer.js` contains the browser-side UI logic. `index.html` and `styles.css` define the interface, `pst-generator.js` builds Logic `.pst` files, and `patches.json` is the default patch dataset. Icons and packaging assets live in `assets/`, while one-off build helpers live in `scripts/`.
+This repository is a small Electron app organized under `src/`. `src/electron/main.js` owns the Electron lifecycle, window creation, MIDI IPC, and file dialogs. `src/electron/preload.js` exposes the safe renderer bridge. The renderer UI lives in `src/renderer/`, with browser-side logic in `src/renderer/scripts/`, HTML in `src/renderer/index.html`, and styles in `src/renderer/styles/`. The default patch dataset lives at `src/data/patches.json`. Icons and packaging assets live in `assets/`, while one-off build helpers live in `scripts/`.
 
 ## Build, Test, and Development Commands
 
@@ -18,4 +18,4 @@ There is no automated test suite or lint configuration checked in today. Validat
 
 ## Commit & Pull Request Guidelines
 
-Recent commits use short, imperative subjects such as `Add exported Genos patches zip file` and `Update screenshot image and remove obsolete patch file`. Keep commit messages concise, capitalized, and focused on one change. PRs should explain the user-visible impact, link any related issue, list validation commands, and include screenshots when `index.html`, `renderer.js`, or `styles.css` changes affect the UI.
+Recent commits use short, imperative subjects such as `Add exported Genos patches zip file` and `Update screenshot image and remove obsolete patch file`. Keep commit messages concise, capitalized, and focused on one change. PRs should explain the user-visible impact, link any related issue, list validation commands, and include screenshots when `src/renderer/index.html`, `src/renderer/scripts/renderer.js`, or `src/renderer/styles/index.css` changes affect the UI.

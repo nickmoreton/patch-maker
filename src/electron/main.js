@@ -29,13 +29,13 @@ function createWindow() {
     backgroundColor: '#1a1a2e'
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 }
 
 app.whenReady().then(() => {
   // Set a custom Dock icon during development on macOS
   if (process.platform === 'darwin') {
-    const devIconPath = path.join(__dirname, 'assets', 'dock-icon-512.png');
+    const devIconPath = path.join(__dirname, '..', '..', 'assets', 'dock-icon-512.png');
     if (fs.existsSync(devIconPath) && app.dock) {
       const image = nativeImage.createFromPath(devIconPath);
       if (!image.isEmpty()) {
@@ -127,7 +127,7 @@ ipcMain.handle('send-patch', async (event, { channel, msb, lsb, pc }) => {
 });
 
 ipcMain.handle('get-default-patches', async () => {
-  const patchesPath = path.join(__dirname, 'patches.json');
+  const patchesPath = path.join(__dirname, '..', 'data', 'patches.json');
   if (fs.existsSync(patchesPath)) {
     try {
       const content = fs.readFileSync(patchesPath, 'utf-8');

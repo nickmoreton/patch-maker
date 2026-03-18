@@ -6,7 +6,7 @@ const {
   getVisibleCategories,
   getVisiblePatches,
   getSelectedMidiPort
-} = require('../renderer-state');
+} = require('../src/renderer/scripts/renderer-state');
 
 function createState(overrides = {}) {
   return {

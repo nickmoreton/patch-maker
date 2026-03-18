@@ -95,6 +95,10 @@ The built app will be in the `dist` folder.
 - Built with Electron
 - Uses the `midi` npm package for native MIDI access
 - Falls back to Web MIDI API if native MIDI is unavailable
+- App source now lives under `src/`:
+  - Electron entry points: `src/electron/`
+  - Renderer HTML/CSS/JS: `src/renderer/`
+  - Bundled patch data: `src/data/patches.json`
 
 ## Archived Export Code
 
