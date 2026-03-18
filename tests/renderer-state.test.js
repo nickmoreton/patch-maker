@@ -5,7 +5,10 @@ const {
   buildPatchCollection,
   getVisibleCategories,
   getVisiblePatches,
-  getSelectedMidiPort
+  getSelectedMidiPort,
+  getSelectedPatches,
+  isPatchSelected,
+  toggleSelectedPatchIds
 } = require('../src/renderer/scripts/renderer-state');
 
 function createState(overrides = {}) {
@@ -13,7 +16,7 @@ function createState(overrides = {}) {
     patches: [],
     categories: [],
     selectedCategory: null,
-    selectedPatch: null,
+    selectedPatchIds: [],
     midiPorts: [],
     selectedMidiPortId: '',
     categorySearchTerm: '',
@@ -67,4 +70,56 @@ test('getSelectedMidiPort derives state correctly', () => {
   });
 
   assert.deepEqual(getSelectedMidiPort(state), { id: '1', name: 'Genos Port' });
+});
+
+test('toggleSelectedPatchIds adds and removes patch ids uniquely', () => {
+  const state = createState({
+    selectedPatchIds: [1, 3]
+  });
+
+  assert.deepEqual(toggleSelectedPatchIds(state, 5), [1, 3, 5]);
+  assert.deepEqual(toggleSelectedPatchIds(state, 3), [1]);
+});
+
+test('getSelectedPatches returns selected patches in selection order', () => {
+  const patches = [
+    { id: 0, name: 'Warm Pad', category: 'Pad', pc: 1, lsb: 2, msb: 3 },
+    { id: 1, name: 'Soft Piano', category: 'Piano', pc: 4, lsb: 5, msb: 6 },
+    { id: 2, name: 'Bright Pad', category: 'Pad', pc: 7, lsb: 8, msb: 9 }
+  ];
+  const state = createState({
+    patches,
+    selectedPatchIds: [2, 0, 99]
+  });
+
+  assert.deepEqual(
+    getSelectedPatches(state).map(patch => patch.name),
+    ['Bright Pad', 'Warm Pad']
+  );
+});
+
+test('isPatchSelected and visible patches remain independent', () => {
+  const patches = [
+    { id: 0, name: 'Warm Pad', category: 'Pad', pc: 1, lsb: 2, msb: 3 },
+    { id: 1, name: 'Soft Piano', category: 'Piano', pc: 4, lsb: 5, msb: 6 },
+    { id: 2, name: 'Bright Pad', category: 'Pad', pc: 7, lsb: 8, msb: 9 }
+  ];
+  const state = createState({
+    patches,
+    categories: ['Pad', 'Piano'],
+    selectedPatchIds: [1, 2],
+    selectedCategory: 'Pad',
+    patchSearchTerm: 'warm'
+  });
+
+  assert.equal(isPatchSelected(state, 1), true);
+  assert.equal(isPatchSelected(state, 0), false);
+  assert.deepEqual(
+    getVisiblePatches(state).map(patch => patch.name),
+    ['Warm Pad']
+  );
+  assert.deepEqual(
+    getSelectedPatches(state).map(patch => patch.name),
+    ['Soft Piano', 'Bright Pad']
+  );
 });

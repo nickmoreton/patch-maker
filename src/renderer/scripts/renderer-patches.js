@@ -25,9 +25,11 @@
 
     state.patches = patchCollection.patches;
     state.categories = patchCollection.categories;
+    state.selectedPatchIds = [];
 
     app.view.renderCategories();
     app.view.renderPatches();
+    app.view.renderSelectedPatches();
 
     elements.patchesLoaded.textContent = `${state.patches.length} patches loaded`;
     elements.categoryCount.textContent = state.categories.length;
@@ -40,10 +42,20 @@
     app.view.renderPatches();
   }
 
-  function selectPatch(patch) {
-    state.selectedPatch = patch;
+  function togglePatchSelection(patch) {
+    state.selectedPatchIds = app.selection.toggleSelectedPatchIds(patch.id);
     app.view.renderPatches();
-    app.view.renderDetails();
+    app.view.renderSelectedPatches();
+  }
+
+  function removeSelectedPatch(patchId) {
+    if (!app.selectors.isPatchSelected(patchId)) {
+      return;
+    }
+
+    state.selectedPatchIds = app.selection.toggleSelectedPatchIds(patchId);
+    app.view.renderPatches();
+    app.view.renderSelectedPatches();
   }
 
   function updateCategorySearchTerm(value) {
@@ -60,7 +72,8 @@
     loadDefaultPatches,
     loadPatchData,
     selectCategory,
-    selectPatch,
+    togglePatchSelection,
+    removeSelectedPatch,
     updateCategorySearchTerm,
     updatePatchSearchTerm
   };

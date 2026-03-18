@@ -20,7 +20,6 @@
     elements.patchSearch.addEventListener('input', handlePatchSearchInput);
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
-    elements.patchList.addEventListener('dblclick', handlePatchListDoubleClick);
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
   }
 
@@ -98,16 +97,7 @@
       return;
     }
 
-    app.patches.selectPatch(patch);
-  }
-
-  function handlePatchListDoubleClick(event) {
-    const patch = getPatchFromEventTarget(event.target);
-    if (!patch) {
-      return;
-    }
-
-    app.midi.sendPatch(patch);
+    app.patches.togglePatchSelection(patch);
   }
 
   function handleDetailsContentClick(event) {
@@ -116,10 +106,18 @@
       return;
     }
 
+    const patchId = parseInt(actionTarget.dataset.id, 10);
+    const patch = state.patches.find(candidate => candidate.id === patchId) || null;
+
     switch (actionTarget.dataset.action) {
       case 'send-selected':
-        if (state.selectedPatch) {
-          app.midi.sendPatch(state.selectedPatch);
+        if (patch) {
+          app.midi.sendPatch(patch);
+        }
+        break;
+      case 'remove-selected':
+        if (patch) {
+          app.patches.removeSelectedPatch(patch.id);
         }
         break;
       default:

@@ -18,6 +18,7 @@
       currentCategory: doc.getElementById('currentCategory'),
       patchCount: doc.getElementById('patchCount'),
       patchSearch: doc.getElementById('patchSearch'),
+      selectedPatchCount: doc.getElementById('selectedPatchCount'),
       patchList: doc.getElementById('patchList'),
       detailsContent: doc.getElementById('detailsContent'),
       patchesLoaded: doc.getElementById('patchesLoaded'),
@@ -65,12 +66,31 @@
     return state.midiPorts.find(port => port.id === state.selectedMidiPortId) || null;
   }
 
+  function getSelectedPatches(state) {
+    const patchesById = new Map(state.patches.map(patch => [patch.id, patch]));
+    return state.selectedPatchIds
+      .map(patchId => patchesById.get(patchId))
+      .filter(Boolean);
+  }
+
+  function isPatchSelected(state, patchId) {
+    return state.selectedPatchIds.includes(patchId);
+  }
+
+  function toggleSelectedPatchIds(state, patchId) {
+    if (isPatchSelected(state, patchId)) {
+      return state.selectedPatchIds.filter(selectedPatchId => selectedPatchId !== patchId);
+    }
+
+    return [...state.selectedPatchIds, patchId];
+  }
+
   const elements = createElements(global.document);
   const state = {
     patches: [],
     categories: [],
     selectedCategory: null,
-    selectedPatch: null,
+    selectedPatchIds: [],
     midiConnected: false,
     webMidiOutput: null,
     midiRefreshPromise: null,
@@ -94,7 +114,12 @@
     buildPatchCollection,
     getVisibleCategories: () => getVisibleCategories(state),
     getVisiblePatches: () => getVisiblePatches(state),
-    getSelectedMidiPort: () => getSelectedMidiPort(state)
+    getSelectedMidiPort: () => getSelectedMidiPort(state),
+    getSelectedPatches: () => getSelectedPatches(state),
+    isPatchSelected: patchId => isPatchSelected(state, patchId)
+  };
+  app.selection = {
+    toggleSelectedPatchIds: patchId => toggleSelectedPatchIds(state, patchId)
   };
   global.GenosApp = app;
 
@@ -103,7 +128,10 @@
       buildPatchCollection,
       getVisibleCategories,
       getVisiblePatches,
-      getSelectedMidiPort
+      getSelectedMidiPort,
+      getSelectedPatches,
+      isPatchSelected,
+      toggleSelectedPatchIds
     };
   }
 })(typeof window !== 'undefined' ? window : globalThis);

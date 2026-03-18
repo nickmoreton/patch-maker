@@ -105,7 +105,7 @@
     }
 
     elements.patchList.innerHTML = visiblePatches.map(patch => {
-      const isSelected = state.selectedPatch && state.selectedPatch.id === patch.id;
+      const isSelected = app.selectors.isPatchSelected(patch.id);
 
       return `
         <div class="patch-card ${isSelected ? 'selected' : ''}" data-id="${patch.id}">
@@ -120,47 +120,68 @@
     }).join('');
   }
 
-  function renderDetails() {
-    if (!state.selectedPatch) {
+  function renderSelectedPatches() {
+    const selectedPatches = app.selectors.getSelectedPatches();
+
+    if (elements.selectedPatchCount) {
+      elements.selectedPatchCount.textContent = selectedPatches.length;
+    }
+
+    if (selectedPatches.length === 0) {
       elements.detailsContent.innerHTML = `
         <div class="no-selection">
           <span class="no-selection-icon">🎹</span>
-          <p>Select a patch to view details</p>
+          <p>Click patches to build a selected list</p>
         </div>
       `;
       return;
     }
 
-    elements.detailsContent.innerHTML = `
-      <div class="patch-details">
-        <div class="detail-category">${state.selectedPatch.category}</div>
-        <div class="detail-name">${state.selectedPatch.name}</div>
+    elements.detailsContent.innerHTML = selectedPatches.map(patch => `
+      <article class="selected-patch-card" data-id="${patch.id}">
+        <div class="selected-patch-top">
+          <div class="patch-details">
+            <div class="detail-category">${patch.category}</div>
+            <div class="detail-name">${patch.name}</div>
+          </div>
+          <button
+            type="button"
+            class="selected-patch-remove"
+            data-action="remove-selected"
+            data-id="${patch.id}"
+            aria-label="Remove ${patch.name} from selected patches"
+          >
+            Remove
+          </button>
+        </div>
 
         <div class="detail-values">
           <div class="detail-row">
             <span class="label">Program</span>
-            <span class="value">${state.selectedPatch.pc}</span>
+            <span class="value">${patch.pc}</span>
           </div>
           <div class="detail-row">
             <span class="label">Bank LSB</span>
-            <span class="value">${state.selectedPatch.lsb}</span>
+            <span class="value">${patch.lsb}</span>
           </div>
           <div class="detail-row">
             <span class="label">Bank MSB</span>
-            <span class="value">${state.selectedPatch.msb}</span>
+            <span class="value">${patch.msb}</span>
           </div>
         </div>
 
-        <button class="btn btn-primary send-btn" id="sendBtn" data-action="send-selected" ${!state.midiConnected ? 'disabled' : ''}>
+        <button
+          class="btn btn-primary send-btn"
+          type="button"
+          data-action="send-selected"
+          data-id="${patch.id}"
+          ${!state.midiConnected ? 'disabled' : ''}
+        >
           <span class="btn-icon">🎵</span>
           Send to Genos
         </button>
-
-        <p style="font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 8px;">
-          Double-click any patch to send quickly
-        </p>
-      </div>
-    `;
+      </article>
+    `).join('');
   }
 
   app.view = {
@@ -169,6 +190,6 @@
     flashPatchCard,
     renderCategories,
     renderPatches,
-    renderDetails
+    renderSelectedPatches
   };
 })(window);

@@ -188,7 +188,7 @@
     state.midiConnected = connected;
     updateMidiDeviceButton();
     app.view.renderMidiDeviceMenu();
-    app.view.renderDetails();
+    app.view.renderSelectedPatches();
   }
 
   function updateMidiDeviceButton() {
