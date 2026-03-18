@@ -5,6 +5,7 @@
     }
 
     return {
+      themeControl: doc.getElementById('themeControl'),
       midiDeviceControl: doc.getElementById('midiDeviceControl'),
       midiDeviceButton: doc.getElementById('midiDeviceButton'),
       midiDeviceMenu: doc.getElementById('midiDeviceMenu'),
@@ -79,7 +80,11 @@
     midiMenuOpen: false,
     midiAccess: null,
     categorySearchTerm: '',
-    patchSearchTerm: ''
+    patchSearchTerm: '',
+    themePreference: 'system',
+    activeTheme: global.document && global.document.documentElement
+      ? (global.document.documentElement.dataset.theme || 'dark')
+      : 'dark'
   };
 
   const app = global.GenosApp || {};

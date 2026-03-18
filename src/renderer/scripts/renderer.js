@@ -3,12 +3,14 @@
   const { elements, state } = app;
 
   async function init() {
+    app.theme.init();
     setupEventListeners();
     await app.patches.loadDefaultPatches();
     await app.midi.refreshMidiDevices();
   }
 
   function setupEventListeners() {
+    elements.themeControl.addEventListener('click', handleThemeControlClick);
     elements.midiDeviceButton.addEventListener('click', app.midi.toggleMidiDeviceMenu);
     elements.midiDeviceButton.addEventListener('keydown', handleMidiDeviceButtonKeydown);
     elements.midiDeviceMenu.addEventListener('click', handleMidiDeviceOptionClick);
@@ -20,6 +22,15 @@
     elements.patchList.addEventListener('click', handlePatchListClick);
     elements.patchList.addEventListener('dblclick', handlePatchListDoubleClick);
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
+  }
+
+  function handleThemeControlClick(event) {
+    const option = event.target.closest('[data-theme-preference]');
+    if (!option) {
+      return;
+    }
+
+    app.theme.syncTheme(option.dataset.themePreference);
   }
 
   function handleMidiDeviceButtonKeydown(event) {

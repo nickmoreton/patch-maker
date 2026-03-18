@@ -18,6 +18,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 14px 20px;
   padding-top: 32px;
 }
@@ -32,6 +33,62 @@
 
 .logo-icon {
   font-size: 1.65rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-control-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+}
+
+.theme-option {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-option:hover {
+  color: var(--text-primary);
+}
+
+.theme-option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.theme-option.active {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
 }
 
 /* Buttons */
@@ -108,7 +165,7 @@
   padding: 9px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(37, 37, 66, 0.95), rgba(26, 26, 46, 0.98));
+  background: linear-gradient(180deg, var(--surface-gradient-start), var(--surface-gradient-end));
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -122,7 +179,7 @@
 .midi-device-button:hover,
 .midi-device-control.open .midi-device-button {
   border-color: var(--accent);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-soft);
 }
 
 .midi-device-button:focus-visible {
@@ -175,8 +232,8 @@
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: rgba(15, 15, 26, 0.98);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  background: var(--menu-background);
+  box-shadow: var(--shadow-strong);
   backdrop-filter: blur(14px);
   z-index: 20;
 }
@@ -241,6 +298,20 @@
 }
 
 @media (max-width: 960px) {
+  .header-content {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .theme-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .midi-bar {
     flex-wrap: wrap;
     align-items: stretch;

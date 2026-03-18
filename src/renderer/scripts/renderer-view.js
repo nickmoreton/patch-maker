@@ -46,6 +46,19 @@
     elements.midiDeviceMenu.innerHTML = optionsMarkup.join('');
   }
 
+  function renderThemeControl() {
+    if (!elements.themeControl) {
+      return;
+    }
+
+    const buttons = elements.themeControl.querySelectorAll('[data-theme-preference]');
+    buttons.forEach(button => {
+      const isActive = button.dataset.themePreference === state.themePreference;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  }
+
   function flashPatchCard(patch) {
     const card = elements.patchList.querySelector(`.patch-card[data-id="${patch.id}"]`);
     if (card) {
@@ -152,6 +165,7 @@
 
   app.view = {
     renderMidiDeviceMenu,
+    renderThemeControl,
     flashPatchCard,
     renderCategories,
     renderPatches,
