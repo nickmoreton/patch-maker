@@ -78,12 +78,28 @@
     return state.selectedPatchChannelsById[String(patchId)] || null;
   }
 
-  function getUsedMidiChannels(state) {
+  function getUsedMidiChannels(state, excludedPatchId) {
+    const excludedId = excludedPatchId === undefined ? null : String(excludedPatchId);
     return new Set(
       state.selectedPatchIds
+        .filter(patchId => String(patchId) !== excludedId)
         .map(patchId => getSelectedPatchChannel(state, patchId))
         .filter(channel => Number.isInteger(channel))
     );
+  }
+
+  function getSelectedPatchAvailableChannels(state, patchId) {
+    const availableChannels = new Set();
+    const currentChannel = getSelectedPatchChannel(state, patchId);
+    const usedByOtherPatches = getUsedMidiChannels(state, patchId);
+
+    for (let channel = 1; channel <= 16; channel += 1) {
+      if (channel === currentChannel || !usedByOtherPatches.has(channel)) {
+        availableChannels.add(channel);
+      }
+    }
+
+    return availableChannels;
   }
 
   function getNextAvailableMidiChannel(state) {
@@ -160,6 +176,8 @@
     getSelectedMidiPort: () => getSelectedMidiPort(state),
     getSelectedPatches: () => getSelectedPatches(state),
     getSelectedPatchChannel: patchId => getSelectedPatchChannel(state, patchId),
+    getUsedMidiChannels: excludedPatchId => getUsedMidiChannels(state, excludedPatchId),
+    getSelectedPatchAvailableChannels: patchId => getSelectedPatchAvailableChannels(state, patchId),
     getNextAvailableMidiChannel: () => getNextAvailableMidiChannel(state),
     isPatchSelected: patchId => isPatchSelected(state, patchId),
     isSelectedPatchExpanded: patchId => isSelectedPatchExpanded(state, patchId)
@@ -179,6 +197,8 @@
       getSelectedMidiPort,
       getSelectedPatches,
       getSelectedPatchChannel,
+      getUsedMidiChannels,
+      getSelectedPatchAvailableChannels,
       getNextAvailableMidiChannel,
       isPatchSelected,
       toggleSelectedPatchIds,

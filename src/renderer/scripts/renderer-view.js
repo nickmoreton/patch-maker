@@ -122,6 +122,7 @@
   }
 
   function renderSelectedPatches() {
+    app.patches.normalizeSelectedPatchChannels();
     const selectedPatches = app.selectors.getSelectedPatches();
 
     if (elements.selectedPatchCount) {
@@ -199,6 +200,7 @@
                 <option
                   value="${channel}"
                   ${app.selectors.getSelectedPatchChannel(patch.id) === channel ? 'selected' : ''}
+                  ${app.selectors.getSelectedPatchAvailableChannels(patch.id).has(channel) ? '' : 'disabled'}
                 >
                   ${channel}
                 </option>

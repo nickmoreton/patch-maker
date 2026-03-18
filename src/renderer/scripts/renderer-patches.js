@@ -17,6 +17,40 @@
     delete state.selectedPatchChannelsById[String(patchId)];
   }
 
+  function findNextFreeMidiChannel(usedChannels) {
+    for (let channel = 1; channel <= 16; channel += 1) {
+      if (!usedChannels.has(channel)) {
+        return channel;
+      }
+    }
+
+    return null;
+  }
+
+  function normalizeSelectedPatchChannels() {
+    const usedChannels = new Set();
+
+    state.selectedPatchIds.forEach(patchId => {
+      const currentChannel = state.selectedPatchChannelsById[String(patchId)];
+
+      if (
+        Number.isInteger(currentChannel) &&
+        currentChannel >= 1 &&
+        currentChannel <= 16 &&
+        !usedChannels.has(currentChannel)
+      ) {
+        usedChannels.add(currentChannel);
+        return;
+      }
+
+      const nextChannel = findNextFreeMidiChannel(usedChannels);
+      if (nextChannel !== null) {
+        setSelectedPatchChannel(patchId, nextChannel);
+        usedChannels.add(nextChannel);
+      }
+    });
+  }
+
   function canSelectMorePatches() {
     return state.selectedPatchIds.length < MAX_SELECTED_PATCHES;
   }
@@ -128,8 +162,17 @@
       return;
     }
 
+    normalizeSelectedPatchChannels();
+
     const nextChannel = parseInt(channel, 10);
     if (!Number.isInteger(nextChannel) || nextChannel < 1 || nextChannel > 16) {
+      app.view.renderSelectedPatches();
+      return;
+    }
+
+    const usedChannels = app.selectors.getUsedMidiChannels(patchId);
+    if (usedChannels.has(nextChannel)) {
+      app.view.renderSelectedPatches();
       return;
     }
 
@@ -141,6 +184,8 @@
     if (state.selectedPatchIds.length < 2) {
       return;
     }
+
+    normalizeSelectedPatchChannels();
 
     state.selectedPatchIds = state.selectedPatchIds
       .map((patchId, index) => ({
@@ -162,6 +207,7 @@
     removeSelectedPatch,
     toggleSelectedPatchExpanded,
     sortSelectedPatchesByChannel,
+    normalizeSelectedPatchChannels,
     updateSelectedPatchChannel,
     updateCategorySearchTerm,
     updatePatchSearchTerm
