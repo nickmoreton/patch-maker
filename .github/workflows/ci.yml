@@ -2,9 +2,11 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
     branches:
       - main
   workflow_dispatch:
@@ -36,6 +38,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     needs: test
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
 
     steps:
       - name: Check out repository
