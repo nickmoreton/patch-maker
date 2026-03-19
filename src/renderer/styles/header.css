@@ -136,6 +136,7 @@
 .midi-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   padding: 10px 20px;
   background: var(--bg-tertiary);
@@ -147,6 +148,7 @@
   align-items: center;
   gap: 8px;
   position: relative;
+  min-width: 0;
 }
 
 .midi-setting label {
@@ -158,6 +160,13 @@
 .midi-device-control {
   position: relative;
   min-width: 260px;
+}
+
+.midi-bar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .midi-device-button {
@@ -324,5 +333,14 @@
 
   .midi-device-control {
     width: 100%;
+  }
+
+  .midi-bar-actions {
+    width: 100%;
+  }
+
+  .midi-bar-actions .selected-patch-bulk-button {
+    width: 100%;
+    justify-content: center;
   }
 }

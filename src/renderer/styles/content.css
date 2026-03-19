@@ -119,7 +119,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
@@ -173,20 +172,16 @@
   cursor: not-allowed;
 }
 
-.selected-patch-bulk-button {
-  white-space: nowrap;
-}
-
-.selected-patch-bulk-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .selected-patch-save-button {
   white-space: nowrap;
 }
 
+.selected-patch-bulk-button {
+  white-space: nowrap;
+}
+
 .selected-patch-save-button:disabled,
+.selected-patch-bulk-button:disabled,
 .favourite-list-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -496,13 +491,11 @@
 
 @media (max-width: 960px) {
   .details-header-actions {
-    width: 100%;
-    justify-content: stretch;
+    flex-wrap: wrap;
   }
 
   .selected-patch-save-button,
-  .selected-patch-sort-button,
-  .selected-patch-bulk-button {
+  .selected-patch-sort-button {
     flex: 1 1 180px;
     justify-content: center;
   }
