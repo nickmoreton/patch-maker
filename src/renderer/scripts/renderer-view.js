@@ -1,63 +1,84 @@
-(function attachRendererView(global) {
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildMidiDeviceMenuMarkup({ midiPorts, selectedMidiPortId, midiConnected, message }) {
+  const ports = Array.isArray(midiPorts) ? midiPorts : [];
+  const selectedPortId = String(selectedMidiPortId || '');
+  const optionsMarkup = [
+    `
+      <button
+        type="button"
+        class="midi-device-option${selectedPortId === '' ? ' selected' : ''}"
+        data-port-id=""
+        role="option"
+        aria-selected="${selectedPortId === '' ? 'true' : 'false'}"
+      >
+        <span class="status-dot disconnected"></span>
+        <span class="midi-device-option-name">No MIDI Device</span>
+      </button>
+    `
+  ];
+
+  if (ports.length > 0) {
+    optionsMarkup.push(...ports.map(port => {
+      const portId = String(port && port.id || '');
+      const portName = String(port && port.name || '');
+      const isSelected = selectedPortId === portId;
+
+      return `
+        <button
+          type="button"
+          class="midi-device-option${isSelected ? ' selected' : ''}"
+          data-port-id="${escapeHtml(portId)}"
+          role="option"
+          aria-selected="${isSelected ? 'true' : 'false'}"
+        >
+          <span class="status-dot ${isSelected && midiConnected ? 'connected' : 'disconnected'}"></span>
+          <span class="midi-device-option-name">${escapeHtml(portName)}</span>
+        </button>
+      `;
+    }));
+  }
+
+  if (message) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">${escapeHtml(message)}</div>
+    `);
+  } else if (ports.length === 0) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">No MIDI devices found</div>
+    `);
+  }
+
+  return optionsMarkup.join('');
+}
+
+function attachRendererView(global) {
   const app = global.GenosApp;
+  if (!app) {
+    return;
+  }
+
   const { elements, state } = app;
   const CHANNEL_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
-
-  function escapeHtml(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
 
   function formatPatchCount(count) {
     return `${count} patch${count === 1 ? '' : 'es'}`;
   }
 
   function renderMidiDeviceMenu(message) {
-    const optionsMarkup = [
-      `
-        <button
-          type="button"
-          class="midi-device-option${state.selectedMidiPortId === '' ? ' selected' : ''}"
-          data-port-id=""
-          role="option"
-          aria-selected="${state.selectedMidiPortId === '' ? 'true' : 'false'}"
-        >
-          <span class="status-dot disconnected"></span>
-          <span class="midi-device-option-name">No MIDI Device</span>
-        </button>
-      `
-    ];
-
-    if (state.midiPorts.length > 0) {
-      optionsMarkup.push(...state.midiPorts.map(port => `
-        <button
-          type="button"
-          class="midi-device-option${state.selectedMidiPortId === port.id ? ' selected' : ''}"
-          data-port-id="${port.id}"
-          role="option"
-          aria-selected="${state.selectedMidiPortId === port.id ? 'true' : 'false'}"
-        >
-          <span class="status-dot ${state.selectedMidiPortId === port.id && state.midiConnected ? 'connected' : 'disconnected'}"></span>
-          <span class="midi-device-option-name">${port.name}</span>
-        </button>
-      `));
-    }
-
-    if (message) {
-      optionsMarkup.push(`
-        <div class="midi-device-empty" role="status">${message}</div>
-      `);
-    } else if (state.midiPorts.length === 0) {
-      optionsMarkup.push(`
-        <div class="midi-device-empty" role="status">No MIDI devices found</div>
-      `);
-    }
-
-    elements.midiDeviceMenu.innerHTML = optionsMarkup.join('');
+    elements.midiDeviceMenu.innerHTML = buildMidiDeviceMenuMarkup({
+      midiPorts: state.midiPorts,
+      selectedMidiPortId: state.selectedMidiPortId,
+      midiConnected: state.midiConnected,
+      message
+    });
   }
 
   function renderThemeControl() {
@@ -261,6 +282,10 @@
 
     if (elements.headerLoadFavouriteButton) {
       elements.headerLoadFavouriteButton.hidden = state.savedFavouriteLists.length === 0;
+      elements.headerLoadFavouriteButton.disabled = (
+        state.savedFavouriteLists.length === 0 ||
+        state.bulkSendInProgress
+      );
     }
 
     if (selectedPatches.length === 0) {
@@ -296,6 +321,7 @@
               data-action="remove-selected"
               data-id="${patch.id}"
               aria-label="Remove ${patch.name} from selected patches"
+              ${state.bulkSendInProgress ? 'disabled' : ''}
             >
               Remove
             </button>
@@ -327,6 +353,7 @@
               data-channel-select="true"
               data-id="${patch.id}"
               aria-label="MIDI channel for ${patch.name}"
+              ${state.bulkSendInProgress ? 'disabled' : ''}
             >
               ${CHANNEL_OPTIONS.map(channel => `
                 <option
@@ -367,4 +394,14 @@
     renderPatches,
     renderSelectedPatches
   };
-})(window);
+}
+
+attachRendererView(typeof window !== 'undefined' ? window : globalThis);
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    escapeHtml,
+    buildMidiDeviceMenuMarkup,
+    attachRendererView
+  };
+}

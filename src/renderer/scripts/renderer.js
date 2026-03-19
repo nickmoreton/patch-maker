@@ -52,6 +52,10 @@
   }
 
   function handleHeaderLoadFavouriteClick() {
+    if (state.bulkSendInProgress) {
+      return;
+    }
+
     app.patches.openBrowseFavouritesModal();
   }
 
@@ -125,6 +129,10 @@
   }
 
   function handlePatchListClick(event) {
+    if (state.bulkSendInProgress) {
+      return;
+    }
+
     const patch = getPatchFromEventTarget(event.target);
     if (!patch) {
       return;
@@ -166,7 +174,7 @@
           }
           return;
         case 'remove-selected':
-          if (patch) {
+          if (patch && !state.bulkSendInProgress) {
             app.patches.removeSelectedPatch(patch.id);
           }
           return;
@@ -189,6 +197,10 @@
   }
 
   function handleDetailsContentChange(event) {
+    if (state.bulkSendInProgress) {
+      return;
+    }
+
     const channelSelect = event.target.closest('[data-channel-select="true"]');
     if (!channelSelect) {
       return;
@@ -214,6 +226,9 @@
 
     switch (actionTarget.dataset.action) {
       case 'load-favourite':
+        if (state.bulkSendInProgress) {
+          return;
+        }
         app.patches.loadFavouriteList(actionTarget.dataset.favouriteName);
         return;
       case 'delete-favourite':

@@ -1,5 +1,13 @@
-(function attachRendererPatches(global) {
+function isSelectedPatchMutationLocked(state) {
+  return Boolean(state && state.bulkSendInProgress);
+}
+
+function attachRendererPatches(global) {
   const app = global.GenosApp;
+  if (!app) {
+    return;
+  }
+
   const { elements, state } = app;
   const MAX_SELECTED_PATCHES = 16;
 
@@ -147,7 +155,7 @@
   }
 
   function openBrowseFavouritesModal() {
-    if (state.savedFavouriteLists.length === 0) {
+    if (state.savedFavouriteLists.length === 0 || isSelectedPatchMutationLocked(state)) {
       return;
     }
 
@@ -282,6 +290,10 @@
   }
 
   function loadFavouriteList(name) {
+    if (isSelectedPatchMutationLocked(state)) {
+      return;
+    }
+
     const favourite = state.savedFavouriteLists.find(entry => entry.name === name);
     if (!favourite) {
       setStatusMessage(`Favourite not found: ${name}`);
@@ -452,6 +464,10 @@
   }
 
   function togglePatchSelection(patch) {
+    if (isSelectedPatchMutationLocked(state)) {
+      return;
+    }
+
     const isRemoving = app.selectors.isPatchSelected(patch.id);
 
     if (isRemoving) {
@@ -483,6 +499,10 @@
   }
 
   function removeSelectedPatch(patchId) {
+    if (isSelectedPatchMutationLocked(state)) {
+      return;
+    }
+
     if (!app.selectors.isPatchSelected(patchId)) {
       return;
     }
@@ -514,6 +534,10 @@
   }
 
   function updateSelectedPatchChannel(patchId, channel) {
+    if (isSelectedPatchMutationLocked(state)) {
+      return;
+    }
+
     if (!app.selectors.isPatchSelected(patchId)) {
       return;
     }
@@ -537,6 +561,10 @@
   }
 
   function sortSelectedPatchesByChannel() {
+    if (isSelectedPatchMutationLocked(state)) {
+      return;
+    }
+
     if (state.selectedPatchIds.length < 2) {
       return;
     }
@@ -575,4 +603,13 @@
     submitModal,
     closeModal
   };
-})(window);
+}
+
+attachRendererPatches(typeof window !== 'undefined' ? window : globalThis);
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    isSelectedPatchMutationLocked,
+    attachRendererPatches
+  };
+}
