@@ -19,12 +19,23 @@
       patchCount: doc.getElementById('patchCount'),
       patchSearch: doc.getElementById('patchSearch'),
       selectedPatchCount: doc.getElementById('selectedPatchCount'),
+      selectedPatchSaveFavouriteButton: doc.getElementById('selectedPatchSaveFavouriteButton'),
       selectedPatchSortButton: doc.getElementById('selectedPatchSortButton'),
       selectedPatchSendAllButton: doc.getElementById('selectedPatchSendAllButton'),
       patchList: doc.getElementById('patchList'),
       detailsContent: doc.getElementById('detailsContent'),
       patchesLoaded: doc.getElementById('patchesLoaded'),
-      lastSent: doc.getElementById('lastSent')
+      lastSent: doc.getElementById('lastSent'),
+      appModalBackdrop: doc.getElementById('appModalBackdrop'),
+      appModal: doc.getElementById('appModal'),
+      appModalForm: doc.getElementById('appModalForm'),
+      appModalTitle: doc.getElementById('appModalTitle'),
+      appModalMessage: doc.getElementById('appModalMessage'),
+      appModalField: doc.getElementById('appModalField'),
+      appModalInput: doc.getElementById('appModalInput'),
+      appModalError: doc.getElementById('appModalError'),
+      appModalCancelButton: doc.getElementById('appModalCancelButton'),
+      appModalConfirmButton: doc.getElementById('appModalConfirmButton')
     };
   }
 
@@ -32,12 +43,43 @@
     return String(value || '').toLowerCase();
   }
 
+  function buildPatchIdentity(patch) {
+    if (!patch || typeof patch !== 'object') {
+      return '';
+    }
+
+    return [
+      patch.category,
+      patch.name,
+      patch.msb,
+      patch.lsb,
+      patch.pc
+    ].map(value => String(value == null ? '' : value)).join('||');
+  }
+
   function buildPatchCollection(data) {
     const patches = Array.isArray(data)
-      ? data.map((patch, index) => ({ ...patch, id: index }))
+      ? data.map((patch, index) => ({
+        ...patch,
+        id: index,
+        patchIdentity: buildPatchIdentity(patch)
+      }))
       : [];
     const categories = Array.from(new Set(patches.map(patch => patch.category))).sort();
     return { patches, categories };
+  }
+
+  function sortFavouriteLists(lists) {
+    return [...lists].sort((left, right) => {
+      const rightTime = Date.parse(right && right.updatedAt) || 0;
+      const leftTime = Date.parse(left && left.updatedAt) || 0;
+
+      if (rightTime !== leftTime) {
+        return rightTime - leftTime;
+      }
+
+      return String(left && left.name || '').localeCompare(String(right && right.name || ''));
+    });
   }
 
   function getVisibleCategories(state) {
@@ -151,6 +193,20 @@
     selectedPatchIds: [],
     expandedSelectedPatchIds: [],
     selectedPatchChannelsById: {},
+    savedFavouriteLists: [],
+    modal: {
+      isOpen: false,
+      mode: null,
+      title: '',
+      message: '',
+      confirmLabel: 'Confirm',
+      cancelLabel: 'Cancel',
+      inputLabel: 'Favourite name',
+      inputValue: '',
+      error: '',
+      showInput: false,
+      targetName: ''
+    },
     midiConnected: false,
     bulkSendInProgress: false,
     webMidiOutput: null,
@@ -173,6 +229,7 @@
   app.elements = elements;
   app.selectors = {
     buildPatchCollection,
+    buildPatchIdentity,
     getVisibleCategories: () => getVisibleCategories(state),
     getVisiblePatches: () => getVisiblePatches(state),
     getSelectedMidiPort: () => getSelectedMidiPort(state),
@@ -182,7 +239,8 @@
     getSelectedPatchAvailableChannels: patchId => getSelectedPatchAvailableChannels(state, patchId),
     getNextAvailableMidiChannel: () => getNextAvailableMidiChannel(state),
     isPatchSelected: patchId => isPatchSelected(state, patchId),
-    isSelectedPatchExpanded: patchId => isSelectedPatchExpanded(state, patchId)
+    isSelectedPatchExpanded: patchId => isSelectedPatchExpanded(state, patchId),
+    sortFavouriteLists
   };
   app.selection = {
     toggleSelectedPatchIds: patchId => toggleSelectedPatchIds(state, patchId),
@@ -194,6 +252,7 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       buildPatchCollection,
+      buildPatchIdentity,
       getVisibleCategories,
       getVisiblePatches,
       getSelectedMidiPort,
@@ -206,7 +265,8 @@
       toggleSelectedPatchIds,
       isSelectedPatchExpanded,
       toggleSelectedPatchExpanded,
-      collapseRemovedSelectedPatch
+      collapseRemovedSelectedPatch,
+      sortFavouriteLists
     };
   }
 })(typeof window !== 'undefined' ? window : globalThis);

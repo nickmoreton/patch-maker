@@ -3,6 +3,19 @@
   const { elements, state } = app;
   const CHANNEL_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatPatchCount(count) {
+    return `${count} patch${count === 1 ? '' : 'es'}`;
+  }
+
   function renderMidiDeviceMenu(message) {
     const optionsMarkup = [
       `
@@ -58,6 +71,51 @@
       button.classList.toggle('active', isActive);
       button.setAttribute('aria-pressed', String(isActive));
     });
+  }
+
+  function renderAppModal() {
+    if (!elements.appModalBackdrop || !elements.appModal) {
+      return;
+    }
+
+    const { modal } = state;
+    elements.appModalBackdrop.hidden = !modal.isOpen;
+    elements.appModalBackdrop.classList.toggle('open', modal.isOpen);
+    elements.appModal.setAttribute('aria-hidden', String(!modal.isOpen));
+
+    if (!modal.isOpen) {
+      return;
+    }
+
+    if (elements.appModalTitle) {
+      elements.appModalTitle.textContent = modal.title;
+    }
+
+    if (elements.appModalMessage) {
+      elements.appModalMessage.textContent = modal.message;
+    }
+
+    if (elements.appModalField) {
+      elements.appModalField.hidden = !modal.showInput;
+    }
+
+    if (elements.appModalInput) {
+      elements.appModalInput.value = modal.inputValue || '';
+      elements.appModalInput.setAttribute('aria-invalid', modal.error ? 'true' : 'false');
+    }
+
+    if (elements.appModalError) {
+      elements.appModalError.hidden = !modal.error;
+      elements.appModalError.textContent = modal.error || '';
+    }
+
+    if (elements.appModalConfirmButton) {
+      elements.appModalConfirmButton.textContent = modal.confirmLabel;
+    }
+
+    if (elements.appModalCancelButton) {
+      elements.appModalCancelButton.textContent = modal.cancelLabel;
+    }
   }
 
   function flashPatchCard(patch) {
@@ -135,6 +193,10 @@
       elements.selectedPatchCount.textContent = selectedPatches.length;
     }
 
+    if (elements.selectedPatchSaveFavouriteButton) {
+      elements.selectedPatchSaveFavouriteButton.disabled = selectedPatches.length === 0;
+    }
+
     if (elements.selectedPatchSortButton) {
       elements.selectedPatchSortButton.disabled = hasMultipleSelectedPatches === false || state.bulkSendInProgress;
     }
@@ -146,9 +208,55 @@
         : 'Send All to Genos';
     }
 
+    const favouriteListsMarkup = `
+      <section class="saved-favourites-section" aria-label="Saved favourite lists">
+        <div class="saved-favourites-header">
+          <div class="saved-favourites-heading">
+            <h3>Favourites</h3>
+            <span class="saved-favourites-count">${state.savedFavouriteLists.length}</span>
+          </div>
+          <p>Save and recall selected patch lists.</p>
+        </div>
+        ${state.savedFavouriteLists.length === 0 ? `
+          <div class="favourites-empty">No saved favourites yet.</div>
+        ` : `
+          <div class="favourites-list">
+            ${state.savedFavouriteLists.map(list => `
+              <article class="favourite-list-card">
+                <div class="favourite-list-copy">
+                  <div class="favourite-list-name">${escapeHtml(list.name)}</div>
+                  <div class="favourite-list-meta">${formatPatchCount(list.patches.length)}</div>
+                </div>
+                <div class="favourite-list-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="load-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="delete-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                    aria-label="Delete favourite ${escapeHtml(list.name)}"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        `}
+      </section>
+    `;
+
     if (selectedPatches.length === 0) {
       elements.detailsContent.innerHTML = `
-        <div class="no-selection">
+        ${favouriteListsMarkup}
+        <div class="no-selection no-selection-inline">
           <span class="no-selection-icon">🎹</span>
           <p>Click patches to build a selected list</p>
         </div>
@@ -156,7 +264,10 @@
       return;
     }
 
-    elements.detailsContent.innerHTML = selectedPatches.map(patch => `
+    elements.detailsContent.innerHTML = `
+      ${favouriteListsMarkup}
+      <section class="selected-patches-section" aria-label="Current selected patches">
+        ${selectedPatches.map(patch => `
       <article
         class="selected-patch-card ${app.selectors.isSelectedPatchExpanded(patch.id) ? 'expanded' : ''}"
         data-id="${patch.id}"
@@ -233,10 +344,13 @@
           </button>
         </div>
       </article>
-    `).join('');
+        `).join('')}
+      </section>
+    `;
   }
 
   app.view = {
+    renderAppModal,
     renderMidiDeviceMenu,
     renderThemeControl,
     flashPatchCard,

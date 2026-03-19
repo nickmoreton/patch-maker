@@ -101,6 +101,14 @@
           <div class="details-header-actions">
             <button
               type="button"
+              class="btn btn-secondary selected-patch-save-button"
+              id="selectedPatchSaveFavouriteButton"
+              disabled
+            >
+              Save Favourite
+            </button>
+            <button
+              type="button"
               class="selected-patch-sort-button"
               id="selectedPatchSortButton"
               disabled
@@ -135,6 +143,39 @@
         <span id="lastSent">—</span>
       </div>
     </footer>
+  </div>
+
+  <div class="app-modal-backdrop" id="appModalBackdrop" hidden>
+    <div
+      class="app-modal"
+      id="appModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="appModalTitle"
+      aria-describedby="appModalMessage"
+    >
+      <form class="app-modal-form" id="appModalForm">
+        <div class="app-modal-copy">
+          <h2 id="appModalTitle">Save Favourite</h2>
+          <p id="appModalMessage"></p>
+        </div>
+        <label class="app-modal-field" id="appModalField" hidden>
+          <span class="app-modal-label">Favourite name</span>
+          <input
+            type="text"
+            id="appModalInput"
+            class="app-modal-input"
+            maxlength="120"
+            autocomplete="off"
+          >
+        </label>
+        <p class="app-modal-error" id="appModalError" role="alert" hidden></p>
+        <div class="app-modal-actions">
+          <button type="button" class="btn btn-secondary" id="appModalCancelButton">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="appModalConfirmButton">Save</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="./scripts/renderer-state.js"></script>

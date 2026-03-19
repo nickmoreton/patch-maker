@@ -182,6 +182,115 @@
   cursor: not-allowed;
 }
 
+.selected-patch-save-button {
+  white-space: nowrap;
+}
+
+.selected-patch-save-button:disabled,
+.favourite-list-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saved-favourites-section,
+.selected-patches-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.selected-patches-section {
+  margin-top: 18px;
+}
+
+.saved-favourites-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.saved-favourites-header p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.saved-favourites-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saved-favourites-heading h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.saved-favourites-count {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.favourites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.favourite-list-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-primary);
+}
+
+.favourite-list-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.favourite-list-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.favourite-list-meta {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.favourite-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.favourite-list-button {
+  white-space: nowrap;
+}
+
+.favourites-empty {
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  background: var(--bg-primary);
+}
+
 .no-selection {
   display: flex;
   flex-direction: column;
@@ -190,6 +299,13 @@
   height: 100%;
   color: var(--text-dim);
   text-align: center;
+}
+
+.no-selection-inline {
+  min-height: 220px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: var(--bg-primary);
 }
 
 .no-selection-icon {
@@ -384,9 +500,119 @@
     justify-content: stretch;
   }
 
+  .selected-patch-save-button,
   .selected-patch-sort-button,
   .selected-patch-bulk-button {
     flex: 1 1 180px;
     justify-content: center;
   }
+
+  .favourite-list-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .favourite-list-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .favourite-list-button {
+    flex: 1 1 140px;
+    justify-content: center;
+  }
+}
+
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 10, 20, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.app-modal-backdrop[hidden] {
+  display: none;
+}
+
+.app-modal {
+  width: min(100%, 420px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--surface-gradient-start), var(--surface-gradient-end));
+  box-shadow: var(--shadow-strong);
+}
+
+.app-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.app-modal-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-modal-copy h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.app-modal-copy p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.app-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-modal-field[hidden] {
+  display: none;
+}
+
+.app-modal-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-modal-input {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.app-modal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.app-modal-error {
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+.app-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }

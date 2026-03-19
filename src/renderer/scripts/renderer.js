@@ -6,6 +6,7 @@
     app.theme.init();
     setupEventListeners();
     await app.patches.loadDefaultPatches();
+    await app.patches.loadFavouriteLists();
     await app.midi.refreshMidiDevices();
   }
 
@@ -20,10 +21,14 @@
     elements.patchSearch.addEventListener('input', handlePatchSearchInput);
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
+    elements.selectedPatchSaveFavouriteButton.addEventListener('click', handleSelectedPatchSaveFavouriteClick);
     elements.selectedPatchSortButton.addEventListener('click', handleSelectedPatchSortClick);
     elements.selectedPatchSendAllButton.addEventListener('click', handleSelectedPatchSendAllClick);
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
     elements.detailsContent.addEventListener('change', handleDetailsContentChange);
+    elements.appModalBackdrop.addEventListener('click', handleModalBackdropClick);
+    elements.appModalForm.addEventListener('submit', handleModalSubmit);
+    elements.appModalCancelButton.addEventListener('click', handleModalCancelClick);
   }
 
   function handleThemeControlClick(event) {
@@ -60,6 +65,11 @@
   }
 
   function handleDocumentKeydown(event) {
+    if (state.modal.isOpen && event.key === 'Escape') {
+      app.patches.closeModal();
+      return;
+    }
+
     if (event.key === 'Escape' && state.midiMenuOpen) {
       app.midi.closeMidiDeviceMenu();
       elements.midiDeviceButton.focus();
@@ -111,6 +121,10 @@
     app.patches.sortSelectedPatchesByChannel();
   }
 
+  function handleSelectedPatchSaveFavouriteClick() {
+    app.patches.saveSelectedPatchesAsFavourite();
+  }
+
   function handleSelectedPatchSendAllClick() {
     if (state.bulkSendInProgress) {
       return;
@@ -135,6 +149,12 @@
           if (patch) {
             app.patches.removeSelectedPatch(patch.id);
           }
+          return;
+        case 'load-favourite':
+          app.patches.loadFavouriteList(actionTarget.dataset.favouriteName);
+          return;
+        case 'delete-favourite':
+          app.patches.deleteFavouriteList(actionTarget.dataset.favouriteName);
           return;
         default:
           return;
@@ -162,6 +182,23 @@
 
     const patchId = parseInt(channelSelect.dataset.id, 10);
     app.patches.updateSelectedPatchChannel(patchId, channelSelect.value);
+  }
+
+  function handleModalBackdropClick(event) {
+    if (event.target !== elements.appModalBackdrop) {
+      return;
+    }
+
+    app.patches.closeModal();
+  }
+
+  function handleModalSubmit(event) {
+    event.preventDefault();
+    app.patches.submitModal();
+  }
+
+  function handleModalCancelClick() {
+    app.patches.closeModal();
   }
 
   app.init = init;

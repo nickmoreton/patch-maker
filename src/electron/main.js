@@ -13,6 +13,124 @@ try {
 
 let mainWindow;
 let midiOutput = null;
+const FAVOURITE_LISTS_FILENAME = 'favourite-lists.json';
+const FAVOURITE_LISTS_VERSION = 1;
+
+function parseInteger(value) {
+  const nextValue = Number.parseInt(value, 10);
+  return Number.isInteger(nextValue) ? nextValue : null;
+}
+
+function normalizeFavouritePatch(patch) {
+  if (!patch || typeof patch !== 'object') {
+    return null;
+  }
+
+  const category = typeof patch.category === 'string' ? patch.category.trim() : '';
+  const name = typeof patch.name === 'string' ? patch.name.trim() : '';
+  const msb = parseInteger(patch.msb);
+  const lsb = parseInteger(patch.lsb);
+  const pc = parseInteger(patch.pc);
+  const channel = parseInteger(patch.channel);
+
+  if (!category || !name || msb === null || lsb === null || pc === null) {
+    return null;
+  }
+
+  return {
+    category,
+    name,
+    msb,
+    lsb,
+    pc,
+    channel: channel !== null && channel >= 1 && channel <= 16 ? channel : null
+  };
+}
+
+function normalizeFavouriteList(entry) {
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+
+  const name = typeof entry.name === 'string' ? entry.name.trim() : '';
+  const updatedAt = typeof entry.updatedAt === 'string' && !Number.isNaN(Date.parse(entry.updatedAt))
+    ? entry.updatedAt
+    : new Date(0).toISOString();
+  const patches = Array.isArray(entry.patches)
+    ? entry.patches.map(normalizeFavouritePatch).filter(Boolean)
+    : [];
+
+  if (!name || patches.length === 0) {
+    return null;
+  }
+
+  return {
+    name,
+    updatedAt,
+    patches
+  };
+}
+
+function sortFavouriteLists(lists) {
+  return [...lists].sort((left, right) => {
+    const rightTime = Date.parse(right.updatedAt) || 0;
+    const leftTime = Date.parse(left.updatedAt) || 0;
+
+    if (rightTime !== leftTime) {
+      return rightTime - leftTime;
+    }
+
+    return left.name.localeCompare(right.name);
+  });
+}
+
+function getFavouriteListsPath() {
+  return path.join(app.getPath('userData'), FAVOURITE_LISTS_FILENAME);
+}
+
+function readFavouriteListsStore() {
+  const favouritesPath = getFavouriteListsPath();
+  if (!fs.existsSync(favouritesPath)) {
+    return {
+      version: FAVOURITE_LISTS_VERSION,
+      lists: []
+    };
+  }
+
+  try {
+    const content = fs.readFileSync(favouritesPath, 'utf-8');
+    const parsed = JSON.parse(content);
+    const lists = Array.isArray(parsed && parsed.lists)
+      ? parsed.lists.map(normalizeFavouriteList).filter(Boolean)
+      : [];
+
+    return {
+      version: FAVOURITE_LISTS_VERSION,
+      lists: sortFavouriteLists(lists)
+    };
+  } catch (error) {
+    return {
+      version: FAVOURITE_LISTS_VERSION,
+      lists: []
+    };
+  }
+}
+
+function writeFavouriteListsStore(store) {
+  const favouritesPath = getFavouriteListsPath();
+  const lists = Array.isArray(store && store.lists)
+    ? store.lists.map(normalizeFavouriteList).filter(Boolean)
+    : [];
+  const nextStore = {
+    version: FAVOURITE_LISTS_VERSION,
+    lists: sortFavouriteLists(lists)
+  };
+
+  fs.mkdirSync(path.dirname(favouritesPath), { recursive: true });
+  fs.writeFileSync(favouritesPath, JSON.stringify(nextStore, null, 2), 'utf-8');
+
+  return nextStore;
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -137,4 +255,70 @@ ipcMain.handle('get-default-patches', async () => {
     }
   }
   return null;
+});
+
+ipcMain.handle('get-favourite-lists', async () => {
+  try {
+    const store = readFavouriteListsStore();
+    return { success: true, lists: store.lists };
+  } catch (error) {
+    return { success: false, error: 'Unable to load favourite lists' };
+  }
+});
+
+ipcMain.handle('save-favourite-list', async (event, payload) => {
+  try {
+    const name = typeof payload.name === 'string' ? payload.name.trim() : '';
+    const patches = Array.isArray(payload.patches)
+      ? payload.patches.map(normalizeFavouritePatch).filter(Boolean)
+      : [];
+
+    if (!name) {
+      return { success: false, error: 'Favourite name is required' };
+    }
+
+    if (patches.length === 0) {
+      return { success: false, error: 'Cannot save an empty favourite list' };
+    }
+
+    const store = readFavouriteListsStore();
+    const favourite = {
+      name,
+      updatedAt: new Date().toISOString(),
+      patches
+    };
+    const nextLists = sortFavouriteLists([
+      ...store.lists.filter(entry => entry.name !== name),
+      favourite
+    ]);
+    const nextStore = writeFavouriteListsStore({ lists: nextLists });
+
+    return {
+      success: true,
+      favourite,
+      lists: nextStore.lists
+    };
+  } catch (error) {
+    return { success: false, error: 'Unable to save favourite list' };
+  }
+});
+
+ipcMain.handle('delete-favourite-list', async (event, name) => {
+  try {
+    const nextName = typeof name === 'string' ? name.trim() : '';
+    if (!nextName) {
+      return { success: false, error: 'Favourite name is required' };
+    }
+
+    const store = readFavouriteListsStore();
+    const nextLists = store.lists.filter(entry => entry.name !== nextName);
+    const nextStore = writeFavouriteListsStore({ lists: nextLists });
+
+    return {
+      success: true,
+      lists: nextStore.lists
+    };
+  } catch (error) {
+    return { success: false, error: 'Unable to delete favourite list' };
+  }
 });
