@@ -7,10 +7,11 @@ A desktop MIDI utility app for browsing and sending patches to the Yamaha Genos 
 ## Features
 
 - 🎹 Browse all 1,711 Genos voice patches organized by category
-- 🔍 Search and filter patches instantly
-- 🎵 Send patches directly to your Genos via MIDI
-- 📁 Load custom patch lists from JSON files
-- 🎛️ Select MIDI channel (1-16)
+- 🔍 Filter categories and patches instantly
+- 🗂️ Build a selected patch list with per-patch MIDI channels
+- 💾 Save and reload favourite patch lists
+- 🎵 Send individual patches or the full selected list to your Genos via MIDI
+- 🎨 Switch between system, light, and dark appearance modes
 
 ## App Icon (macOS)
 
@@ -48,6 +49,11 @@ During development (`npm start`) on macOS, the Dock icon uses [assets/dock-icon-
    npm start
    ```
 
+4. Run the automated tests:
+   ```bash
+   npm test
+   ```
+
 ### Building for Distribution
 
 To create a standalone app:
@@ -68,33 +74,44 @@ The built app will be in the `dist` folder.
 
 2. **Select MIDI Output** from the dropdown (look for "Digital Workstation Port 1")
 
-3. **Choose MIDI Channel** (default is 1)
+3. **Browse patches** using the category list and patch search
 
-4. **Browse patches** by clicking categories on the left
+4. **Build a selected list** by clicking the patch cards you want to send
 
-5. **Send a patch** by:
-   - Double-clicking any patch card
-   - Or selecting a patch and clicking "Send to Genos"
+5. **Choose MIDI channels** for selected patches in the right-hand panel
+
+6. **Send patches** by:
+   - Clicking "Send to Genos" on an individual selected patch
+   - Or clicking "Send All to Genos" in the MIDI bar
+
+7. **Save or reload favourites** to reuse patch sets later
 
 ## Troubleshooting
 
 ### MIDI device not showing up
 
 - Make sure your Genos is connected via USB and powered on
-- Try clicking the refresh button (🔄) next to the MIDI dropdown
+- Reopen the MIDI output menu to rescan available devices
 - On macOS, you may need to allow MIDI access in System Preferences
 
 ### Patches not changing on Genos
 
-- Ensure you've selected the correct MIDI channel
+- Ensure the correct MIDI output is connected before sending
+- Ensure each selected patch is assigned to the intended MIDI channel
 - The Genos should be set to receive program changes on that channel
 - Try Port 1 first, then Port 2 if needed
+
+## Testing
+
+- Run `npm test` for the Node-based tests in `tests/`
+- For manual verification, exercise patch loading, category and patch filtering, favourite save/load flows, MIDI connection, and single/bulk send behavior when hardware is available
 
 ## Technical Details
 
 - Built with Electron
 - Uses the `midi` npm package for native MIDI access
 - Falls back to Web MIDI API if native MIDI is unavailable
+- Includes automated tests via Node's built-in test runner
 - App source now lives under `src/`:
   - Electron entry points: `src/electron/`
   - Renderer HTML/CSS/JS: `src/renderer/`
