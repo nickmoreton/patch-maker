@@ -6,6 +6,7 @@
 
     return {
       themeControl: doc.getElementById('themeControl'),
+      headerLoadFavouriteButton: doc.getElementById('headerLoadFavouriteButton'),
       midiDeviceControl: doc.getElementById('midiDeviceControl'),
       midiDeviceButton: doc.getElementById('midiDeviceButton'),
       midiDeviceMenu: doc.getElementById('midiDeviceMenu'),
@@ -33,6 +34,7 @@
       appModalMessage: doc.getElementById('appModalMessage'),
       appModalField: doc.getElementById('appModalField'),
       appModalInput: doc.getElementById('appModalInput'),
+      appModalFavourites: doc.getElementById('appModalFavourites'),
       appModalError: doc.getElementById('appModalError'),
       appModalCancelButton: doc.getElementById('appModalCancelButton'),
       appModalConfirmButton: doc.getElementById('appModalConfirmButton')
@@ -205,7 +207,10 @@
       inputValue: '',
       error: '',
       showInput: false,
-      targetName: ''
+      showFavourites: false,
+      hideConfirm: false,
+      targetName: '',
+      returnMode: null
     },
     midiConnected: false,
     bulkSendInProgress: false,

@@ -93,6 +93,7 @@
 
     if (elements.appModalMessage) {
       elements.appModalMessage.textContent = modal.message;
+      elements.appModalMessage.hidden = !modal.message;
     }
 
     if (elements.appModalField) {
@@ -104,12 +105,50 @@
       elements.appModalInput.setAttribute('aria-invalid', modal.error ? 'true' : 'false');
     }
 
+    if (elements.appModalFavourites) {
+      elements.appModalFavourites.hidden = !modal.showFavourites;
+      elements.appModalFavourites.innerHTML = modal.showFavourites
+        ? `
+          <div class="app-modal-favourites-list" aria-label="Saved favourites">
+            ${state.savedFavouriteLists.map(list => `
+              <article class="favourite-list-card">
+                <div class="favourite-list-copy">
+                  <div class="favourite-list-name">${escapeHtml(list.name)}</div>
+                  <div class="favourite-list-meta">${formatPatchCount(list.patches.length)}</div>
+                </div>
+                <div class="favourite-list-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="load-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="delete-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                    aria-label="Delete favourite ${escapeHtml(list.name)}"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        `
+        : '';
+    }
+
     if (elements.appModalError) {
       elements.appModalError.hidden = !modal.error;
       elements.appModalError.textContent = modal.error || '';
     }
 
     if (elements.appModalConfirmButton) {
+      elements.appModalConfirmButton.hidden = Boolean(modal.hideConfirm);
       elements.appModalConfirmButton.textContent = modal.confirmLabel;
     }
 
@@ -208,54 +247,12 @@
         : 'Send All to Genos';
     }
 
-    const favouriteListsMarkup = `
-      <section class="saved-favourites-section" aria-label="Saved favourite lists">
-        <div class="saved-favourites-header">
-          <div class="saved-favourites-heading">
-            <h3>Favourites</h3>
-            <span class="saved-favourites-count">${state.savedFavouriteLists.length}</span>
-          </div>
-          <p>Save and recall selected patch lists.</p>
-        </div>
-        ${state.savedFavouriteLists.length === 0 ? `
-          <div class="favourites-empty">No saved favourites yet.</div>
-        ` : `
-          <div class="favourites-list">
-            ${state.savedFavouriteLists.map(list => `
-              <article class="favourite-list-card">
-                <div class="favourite-list-copy">
-                  <div class="favourite-list-name">${escapeHtml(list.name)}</div>
-                  <div class="favourite-list-meta">${formatPatchCount(list.patches.length)}</div>
-                </div>
-                <div class="favourite-list-actions">
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-small favourite-list-button"
-                    data-action="load-favourite"
-                    data-favourite-name="${escapeHtml(list.name)}"
-                  >
-                    Load
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-small favourite-list-button"
-                    data-action="delete-favourite"
-                    data-favourite-name="${escapeHtml(list.name)}"
-                    aria-label="Delete favourite ${escapeHtml(list.name)}"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </article>
-            `).join('')}
-          </div>
-        `}
-      </section>
-    `;
+    if (elements.headerLoadFavouriteButton) {
+      elements.headerLoadFavouriteButton.hidden = state.savedFavouriteLists.length === 0;
+    }
 
     if (selectedPatches.length === 0) {
       elements.detailsContent.innerHTML = `
-        ${favouriteListsMarkup}
         <div class="no-selection no-selection-inline">
           <span class="no-selection-icon">🎹</span>
           <p>Click patches to build a selected list</p>
@@ -265,7 +262,6 @@
     }
 
     elements.detailsContent.innerHTML = `
-      ${favouriteListsMarkup}
       <section class="selected-patches-section" aria-label="Current selected patches">
         ${selectedPatches.map(patch => `
       <article

@@ -12,6 +12,7 @@
 
   function setupEventListeners() {
     elements.themeControl.addEventListener('click', handleThemeControlClick);
+    elements.headerLoadFavouriteButton.addEventListener('click', handleHeaderLoadFavouriteClick);
     elements.midiDeviceButton.addEventListener('click', app.midi.toggleMidiDeviceMenu);
     elements.midiDeviceButton.addEventListener('keydown', handleMidiDeviceButtonKeydown);
     elements.midiDeviceMenu.addEventListener('click', handleMidiDeviceOptionClick);
@@ -27,6 +28,7 @@
     elements.detailsContent.addEventListener('click', handleDetailsContentClick);
     elements.detailsContent.addEventListener('change', handleDetailsContentChange);
     elements.appModalBackdrop.addEventListener('click', handleModalBackdropClick);
+    elements.appModal.addEventListener('click', handleAppModalClick);
     elements.appModalForm.addEventListener('submit', handleModalSubmit);
     elements.appModalCancelButton.addEventListener('click', handleModalCancelClick);
   }
@@ -45,6 +47,10 @@
       event.preventDefault();
       app.midi.toggleMidiDeviceMenu();
     }
+  }
+
+  function handleHeaderLoadFavouriteClick() {
+    app.patches.openBrowseFavouritesModal();
   }
 
   function handleMidiDeviceOptionClick(event) {
@@ -150,12 +156,6 @@
             app.patches.removeSelectedPatch(patch.id);
           }
           return;
-        case 'load-favourite':
-          app.patches.loadFavouriteList(actionTarget.dataset.favouriteName);
-          return;
-        case 'delete-favourite':
-          app.patches.deleteFavouriteList(actionTarget.dataset.favouriteName);
-          return;
         default:
           return;
       }
@@ -190,6 +190,24 @@
     }
 
     app.patches.closeModal();
+  }
+
+  function handleAppModalClick(event) {
+    const actionTarget = event.target.closest('[data-action]');
+    if (!actionTarget) {
+      return;
+    }
+
+    switch (actionTarget.dataset.action) {
+      case 'load-favourite':
+        app.patches.loadFavouriteList(actionTarget.dataset.favouriteName);
+        return;
+      case 'delete-favourite':
+        app.patches.deleteFavouriteList(actionTarget.dataset.favouriteName);
+        return;
+      default:
+        return;
+    }
   }
 
   function handleModalSubmit(event) {

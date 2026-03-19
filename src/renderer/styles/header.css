@@ -39,6 +39,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: flex-end;
+}
+
+.header-load-favourite-button {
+  white-space: nowrap;
 }
 
 .theme-control {
@@ -166,6 +171,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-left: auto;
 }
 
@@ -339,8 +346,9 @@
     width: 100%;
   }
 
+  .midi-bar-actions .header-load-favourite-button,
   .midi-bar-actions .selected-patch-bulk-button {
-    width: 100%;
+    flex: 1 1 180px;
     justify-content: center;
   }
 }

@@ -60,6 +60,14 @@
       <div class="midi-bar-actions">
         <button
           type="button"
+          class="btn btn-secondary header-load-favourite-button"
+          id="headerLoadFavouriteButton"
+          hidden
+        >
+          Load Favourite
+        </button>
+        <button
+          type="button"
           class="btn btn-primary selected-patch-bulk-button"
           id="selectedPatchSendAllButton"
           disabled
@@ -171,6 +179,7 @@
             autocomplete="off"
           >
         </label>
+        <div class="app-modal-favourites" id="appModalFavourites" hidden></div>
         <p class="app-modal-error" id="appModalError" role="alert" hidden></p>
         <div class="app-modal-actions">
           <button type="button" class="btn btn-secondary" id="appModalCancelButton">Cancel</button>

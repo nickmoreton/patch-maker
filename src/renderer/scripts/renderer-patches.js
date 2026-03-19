@@ -38,6 +38,32 @@
     });
   }
 
+  function focusModalPrimaryControl() {
+    global.requestAnimationFrame(() => {
+      if (state.modal.showInput && elements.appModalInput) {
+        focusModalInput();
+        return;
+      }
+
+      if (state.modal.showFavourites && elements.appModalFavourites) {
+        const firstAction = elements.appModalFavourites.querySelector('[data-action]');
+        if (firstAction) {
+          firstAction.focus();
+          return;
+        }
+      }
+
+      if (!state.modal.hideConfirm && elements.appModalConfirmButton && !elements.appModalConfirmButton.hidden) {
+        elements.appModalConfirmButton.focus();
+        return;
+      }
+
+      if (elements.appModalCancelButton) {
+        elements.appModalCancelButton.focus();
+      }
+    });
+  }
+
   function openModal(nextModal) {
     state.modal = {
       ...state.modal,
@@ -51,17 +77,13 @@
       inputValue: nextModal.inputValue || '',
       error: nextModal.error || '',
       showInput: Boolean(nextModal.showInput),
-      targetName: nextModal.targetName || ''
+      showFavourites: Boolean(nextModal.showFavourites),
+      hideConfirm: Boolean(nextModal.hideConfirm),
+      targetName: nextModal.targetName || '',
+      returnMode: nextModal.returnMode || null
     };
     app.view.renderAppModal();
-
-    if (state.modal.showInput) {
-      focusModalInput();
-    } else if (elements.appModalConfirmButton) {
-      global.requestAnimationFrame(() => {
-        elements.appModalConfirmButton.focus();
-      });
-    }
+    focusModalPrimaryControl();
   }
 
   function closeModal() {
@@ -76,7 +98,10 @@
       inputValue: '',
       error: '',
       showInput: false,
-      targetName: ''
+      showFavourites: false,
+      hideConfirm: false,
+      targetName: '',
+      returnMode: null
     };
     app.view.renderAppModal();
   }
@@ -107,7 +132,7 @@
     });
   }
 
-  function openDeleteFavouriteModal(name) {
+  function openDeleteFavouriteModal(name, returnMode = null) {
     openModal({
       mode: 'confirm-delete-favourite',
       title: 'Delete Favourite?',
@@ -115,7 +140,25 @@
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
       showInput: false,
-      targetName: name
+      showFavourites: false,
+      targetName: name,
+      returnMode
+    });
+  }
+
+  function openBrowseFavouritesModal() {
+    if (state.savedFavouriteLists.length === 0) {
+      return;
+    }
+
+    openModal({
+      mode: 'browse-favourites',
+      title: 'Load Favourite',
+      message: 'Choose a saved patch list to load or delete.',
+      cancelLabel: 'Close',
+      showInput: false,
+      showFavourites: true,
+      hideConfirm: true
     });
   }
 
@@ -286,13 +329,19 @@
 
     if (missingCount > 0) {
       setStatusMessage(`Loaded ${formatPatchCount(loadedCount)} from ${name}, skipped ${formatMissingPatchCount(missingCount)}.`);
+      if (state.modal.mode === 'browse-favourites') {
+        closeModal();
+      }
       return;
     }
 
+    if (state.modal.mode === 'browse-favourites') {
+      closeModal();
+    }
     setStatusMessage(`Loaded favourite: ${name}`);
   }
 
-  async function performDeleteFavouriteList(name) {
+  async function performDeleteFavouriteList(name, returnMode) {
     if (!global.electronAPI || typeof global.electronAPI.deleteFavouriteList !== 'function') {
       setStatusMessage('Favourite deletion is unavailable in this build.');
       return;
@@ -306,6 +355,11 @@
 
     setSavedFavouriteLists(result.lists);
     app.view.renderSelectedPatches();
+
+    if (returnMode === 'browse-favourites' && state.savedFavouriteLists.length > 0) {
+      openBrowseFavouritesModal();
+    }
+
     setStatusMessage(`Deleted favourite: ${name}`);
   }
 
@@ -340,8 +394,9 @@
       }
       case 'confirm-delete-favourite': {
         const name = state.modal.targetName;
+        const returnMode = state.modal.returnMode;
         closeModal();
-        await performDeleteFavouriteList(name);
+        await performDeleteFavouriteList(name, returnMode);
         return;
       }
       default:
@@ -350,7 +405,10 @@
   }
 
   function requestDeleteFavouriteList(name) {
-    openDeleteFavouriteModal(name);
+    openDeleteFavouriteModal(
+      name,
+      state.modal.mode === 'browse-favourites' ? 'browse-favourites' : null
+    );
   }
 
   async function loadDefaultPatches() {
@@ -511,6 +569,7 @@
     updateCategorySearchTerm,
     updatePatchSearchTerm,
     saveSelectedPatchesAsFavourite,
+    openBrowseFavouritesModal,
     loadFavouriteList,
     deleteFavouriteList: requestDeleteFavouriteList,
     submitModal,
