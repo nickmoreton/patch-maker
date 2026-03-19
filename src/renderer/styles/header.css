@@ -1,0 +1,354 @@
+/* Header */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.header-drag-region {
+  -webkit-app-region: drag;
+  height: 28px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  padding-top: 32px;
+}
+
+.logo {
+  font-size: 1.45rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 1.65rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.header-load-favourite-button {
+  white-space: nowrap;
+}
+
+.theme-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-control-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+}
+
+.theme-option {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-option:hover {
+  color: var(--text-primary);
+}
+
+.theme-option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.theme-option.active {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Buttons */
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.btn-small {
+  padding: 7px 12px;
+  font-size: 0.85rem;
+}
+
+/* MIDI Bar */
+.midi-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 20px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.midi-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  min-width: 0;
+}
+
+.midi-setting label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.midi-device-control {
+  position: relative;
+  min-width: 260px;
+}
+
+.midi-bar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.midi-device-button {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-gradient-start), var(--surface-gradient-end));
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.midi-device-button:hover,
+.midi-device-control.open .midi-device-button {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-soft);
+}
+
+.midi-device-button:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.midi-device-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.midi-device-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.midi-device-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midi-device-status {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.midi-device-chevron {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  transition: transform 0.2s ease;
+}
+
+.midi-device-control.open .midi-device-chevron {
+  transform: rotate(180deg);
+}
+
+.midi-device-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--menu-background);
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(14px);
+  z-index: 20;
+}
+
+.midi-device-option {
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.midi-device-option:hover,
+.midi-device-option.selected {
+  background: var(--bg-hover);
+}
+
+.midi-device-option.selected {
+  outline: 1px solid var(--accent-dim);
+}
+
+.midi-device-option-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midi-device-empty {
+  padding: 9px 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-dot.connected {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+.status-dot.disconnected {
+  background: var(--text-dim);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media (max-width: 960px) {
+  .header-content {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .theme-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .midi-bar {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .midi-setting {
+    width: 100%;
+  }
+
+  .midi-device-control {
+    width: 100%;
+  }
+
+  .midi-bar-actions {
+    width: 100%;
+  }
+
+  .midi-bar-actions .header-load-favourite-button,
+  .midi-bar-actions .selected-patch-bulk-button {
+    flex: 1 1 180px;
+    justify-content: center;
+  }
+}

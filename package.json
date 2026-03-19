@@ -2,9 +2,10 @@
   "name": "genos-patch-browser",
   "version": "1.0.0",
   "description": "MIDI Patch Browser for Yamaha Genos",
-  "main": "main.js",
+  "main": "src/electron/main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node --test",
     "build": "electron-builder",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
@@ -32,13 +33,7 @@
       "target": "nsis"
     },
     "files": [
-      "main.js",
-      "index.html",
-      "renderer.js",
-      "preload.js",
-      "pst-generator.js",
-      "styles.css",
-      "patches.json",
+      "src/**",
       "assets/**"
     ]
   }

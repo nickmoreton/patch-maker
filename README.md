@@ -9,7 +9,6 @@ A desktop MIDI utility app for browsing and sending patches to the Yamaha Genos 
 - 🎹 Browse all 1,711 Genos voice patches organized by category
 - 🔍 Search and filter patches instantly
 - 🎵 Send patches directly to your Genos via MIDI
-- 💾 Export Logic Pro External Instrument presets (.pst files)
 - 📁 Load custom patch lists from JSON files
 - 🎛️ Select MIDI channel (1-16)
 
@@ -77,40 +76,6 @@ The built app will be in the `dist` folder.
    - Double-clicking any patch card
    - Or selecting a patch and clicking "Send to Genos"
 
-## Exporting Logic Pro Presets
-
-You can now export any Genos voice as a Logic Pro External Instrument preset:
-
-1. **Select a voice** in the browser
-2. Click **"Export Logic Preset"** in the details panel
-3. Choose where to save the .pst file
-4. **Load in Logic Pro** - Open the External Instrument plugin and load your preset
-
-The exported preset automatically configures:
-- MIDI destination (MD-BT01 Bluetooth MIDI adapter)
-- MIDI channel (1)
-- Bank MSB/LSB and Program Change for the selected voice
-- Audio input routing (1-2, +8dB gain)
-- Auto-compensate latency (enabled)
-
-This eliminates manual Bank Select setup in Logic Pro for each voice!
-
-## Custom Patch Files
-
-You can load your own patch lists by clicking "Load Patches". The JSON format should be:
-
-```json
-[
-  {
-    "category": "Category Name",
-    "name": "Patch Name",
-    "msb": 0,
-    "lsb": 104,
-    "pc": 21
-  }
-]
-```
-
 ## Troubleshooting
 
 ### MIDI device not showing up
@@ -130,6 +95,14 @@ You can load your own patch lists by clicking "Load Patches". The JSON format sh
 - Built with Electron
 - Uses the `midi` npm package for native MIDI access
 - Falls back to Web MIDI API if native MIDI is unavailable
+- App source now lives under `src/`:
+  - Electron entry points: `src/electron/`
+  - Renderer HTML/CSS/JS: `src/renderer/`
+  - Bundled patch data: `src/data/patches.json`
+
+## Archived Export Code
+
+Logic preset export is currently parked outside the live app flow. The preserved implementation lives in [`archived/export/README.md`](archived/export/README.md) and is not packaged with the app.
 
 ## License
 

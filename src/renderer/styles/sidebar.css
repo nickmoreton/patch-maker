@@ -1,0 +1,124 @@
+/* Sidebar */
+.sidebar {
+  width: 264px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.category-count {
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.search-box {
+  position: relative;
+  padding: 10px 14px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 9px 40px 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-box input::placeholder {
+  color: var(--text-dim);
+}
+
+.search-clear-button {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-clear-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.search-clear-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  color: var(--text-primary);
+}
+
+.category-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 6px;
+}
+
+.category-item {
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.15s ease;
+  margin-bottom: 4px;
+}
+
+.category-item:hover {
+  background: var(--bg-hover);
+}
+
+.category-item.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.category-item .count {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  background: var(--bg-primary);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.category-item.active .count {
+  background: var(--accent);
+  color: white;
+}

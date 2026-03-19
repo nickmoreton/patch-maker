@@ -1,0 +1,407 @@
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildMidiDeviceMenuMarkup({ midiPorts, selectedMidiPortId, midiConnected, message }) {
+  const ports = Array.isArray(midiPorts) ? midiPorts : [];
+  const selectedPortId = String(selectedMidiPortId || '');
+  const optionsMarkup = [
+    `
+      <button
+        type="button"
+        class="midi-device-option${selectedPortId === '' ? ' selected' : ''}"
+        data-port-id=""
+        role="option"
+        aria-selected="${selectedPortId === '' ? 'true' : 'false'}"
+      >
+        <span class="status-dot disconnected"></span>
+        <span class="midi-device-option-name">No MIDI Device</span>
+      </button>
+    `
+  ];
+
+  if (ports.length > 0) {
+    optionsMarkup.push(...ports.map(port => {
+      const portId = String(port && port.id || '');
+      const portName = String(port && port.name || '');
+      const isSelected = selectedPortId === portId;
+
+      return `
+        <button
+          type="button"
+          class="midi-device-option${isSelected ? ' selected' : ''}"
+          data-port-id="${escapeHtml(portId)}"
+          role="option"
+          aria-selected="${isSelected ? 'true' : 'false'}"
+        >
+          <span class="status-dot ${isSelected && midiConnected ? 'connected' : 'disconnected'}"></span>
+          <span class="midi-device-option-name">${escapeHtml(portName)}</span>
+        </button>
+      `;
+    }));
+  }
+
+  if (message) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">${escapeHtml(message)}</div>
+    `);
+  } else if (ports.length === 0) {
+    optionsMarkup.push(`
+      <div class="midi-device-empty" role="status">No MIDI devices found</div>
+    `);
+  }
+
+  return optionsMarkup.join('');
+}
+
+function attachRendererView(global) {
+  const app = global.GenosApp;
+  if (!app) {
+    return;
+  }
+
+  const { elements, state } = app;
+  const CHANNEL_OPTIONS = Array.from({ length: 16 }, (_, index) => index + 1);
+
+  function formatPatchCount(count) {
+    return `${count} patch${count === 1 ? '' : 'es'}`;
+  }
+
+  function renderMidiDeviceMenu(message) {
+    elements.midiDeviceMenu.innerHTML = buildMidiDeviceMenuMarkup({
+      midiPorts: state.midiPorts,
+      selectedMidiPortId: state.selectedMidiPortId,
+      midiConnected: state.midiConnected,
+      message
+    });
+  }
+
+  function renderThemeControl() {
+    if (!elements.themeControl) {
+      return;
+    }
+
+    const buttons = elements.themeControl.querySelectorAll('[data-theme-preference]');
+    buttons.forEach(button => {
+      const isActive = button.dataset.themePreference === state.themePreference;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  }
+
+  function renderAppModal() {
+    if (!elements.appModalBackdrop || !elements.appModal) {
+      return;
+    }
+
+    const { modal } = state;
+    elements.appModalBackdrop.hidden = !modal.isOpen;
+    elements.appModalBackdrop.classList.toggle('open', modal.isOpen);
+    elements.appModal.setAttribute('aria-hidden', String(!modal.isOpen));
+
+    if (!modal.isOpen) {
+      return;
+    }
+
+    if (elements.appModalTitle) {
+      elements.appModalTitle.textContent = modal.title;
+    }
+
+    if (elements.appModalMessage) {
+      elements.appModalMessage.textContent = modal.message;
+      elements.appModalMessage.hidden = !modal.message;
+    }
+
+    if (elements.appModalField) {
+      elements.appModalField.hidden = !modal.showInput;
+    }
+
+    if (elements.appModalInput) {
+      elements.appModalInput.value = modal.inputValue || '';
+      elements.appModalInput.setAttribute('aria-invalid', modal.error ? 'true' : 'false');
+    }
+
+    if (elements.appModalFavourites) {
+      elements.appModalFavourites.hidden = !modal.showFavourites;
+      elements.appModalFavourites.innerHTML = modal.showFavourites
+        ? `
+          <div class="app-modal-favourites-list" aria-label="Saved favourites">
+            ${state.savedFavouriteLists.map(list => `
+              <article class="favourite-list-card">
+                <div class="favourite-list-copy">
+                  <div class="favourite-list-name">${escapeHtml(list.name)}</div>
+                  <div class="favourite-list-meta">${formatPatchCount(list.patches.length)}</div>
+                </div>
+                <div class="favourite-list-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="load-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-small favourite-list-button"
+                    data-action="delete-favourite"
+                    data-favourite-name="${escapeHtml(list.name)}"
+                    aria-label="Delete favourite ${escapeHtml(list.name)}"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        `
+        : '';
+    }
+
+    if (elements.appModalError) {
+      elements.appModalError.hidden = !modal.error;
+      elements.appModalError.textContent = modal.error || '';
+    }
+
+    if (elements.appModalConfirmButton) {
+      elements.appModalConfirmButton.hidden = Boolean(modal.hideConfirm);
+      elements.appModalConfirmButton.textContent = modal.confirmLabel;
+    }
+
+    if (elements.appModalCancelButton) {
+      elements.appModalCancelButton.textContent = modal.cancelLabel;
+    }
+  }
+
+  function flashPatchCard(patch) {
+    const card = elements.patchList.querySelector(`.patch-card[data-id="${patch.id}"]`);
+    if (card) {
+      card.style.boxShadow = '0 0 20px var(--accent)';
+      setTimeout(() => {
+        card.style.boxShadow = '';
+      }, 300);
+    }
+  }
+
+  function renderSearchClearButton(input, button) {
+    if (!input || !button) {
+      return;
+    }
+
+    const hasValue = String(input.value || '').length > 0;
+    button.hidden = !hasValue;
+    button.disabled = !hasValue;
+  }
+
+  function renderCategories() {
+    const visibleCategories = app.selectors.getVisibleCategories();
+    renderSearchClearButton(elements.categorySearch, elements.categorySearchClear);
+
+    elements.categoryList.innerHTML = `
+      <li class="category-item ${state.selectedCategory === null ? 'active' : ''}" data-category="">
+        <span>All Patches</span>
+        <span class="count">${state.patches.length}</span>
+      </li>
+      ${visibleCategories.map(category => {
+        const count = state.patches.filter(patch => patch.category === category).length;
+        return `
+          <li class="category-item ${state.selectedCategory === category ? 'active' : ''}" data-category="${category}">
+            <span>${category}</span>
+            <span class="count">${count}</span>
+          </li>
+        `;
+      }).join('')}
+    `;
+  }
+
+  function renderPatches() {
+    const visiblePatches = app.selectors.getVisiblePatches();
+    renderSearchClearButton(elements.patchSearch, elements.patchSearchClear);
+
+    elements.patchCount.textContent = `${visiblePatches.length} voices`;
+
+    if (visiblePatches.length === 0) {
+      elements.patchList.innerHTML = `
+        <div class="no-selection" style="grid-column: 1/-1;">
+          <span class="no-selection-icon">🔍</span>
+          <p>No patches found</p>
+        </div>
+      `;
+      return;
+    }
+
+    elements.patchList.innerHTML = visiblePatches.map(patch => {
+      const isSelected = app.selectors.isPatchSelected(patch.id);
+
+      return `
+        <div class="patch-card ${isSelected ? 'selected' : ''}" data-id="${patch.id}">
+          <div class="patch-name">${patch.name}</div>
+          <div class="patch-values">
+            <span>PC: ${patch.pc}</span>
+            <span>LSB: ${patch.lsb}</span>
+            <span>MSB: ${patch.msb}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderSelectedPatches() {
+    app.patches.normalizeSelectedPatchChannels();
+    const selectedPatches = app.selectors.getSelectedPatches();
+    const hasMultipleSelectedPatches = selectedPatches.length >= 2;
+    const canBulkSend = (
+      selectedPatches.length > 0 &&
+      state.midiConnected &&
+      !state.bulkSendInProgress
+    );
+
+    if (elements.selectedPatchCount) {
+      elements.selectedPatchCount.textContent = selectedPatches.length;
+    }
+
+    if (elements.selectedPatchSaveFavouriteButton) {
+      elements.selectedPatchSaveFavouriteButton.disabled = selectedPatches.length === 0;
+    }
+
+    if (elements.selectedPatchSortButton) {
+      elements.selectedPatchSortButton.disabled = hasMultipleSelectedPatches === false || state.bulkSendInProgress;
+    }
+
+    if (elements.selectedPatchSendAllButton) {
+      elements.selectedPatchSendAllButton.disabled = !canBulkSend;
+      elements.selectedPatchSendAllButton.textContent = state.bulkSendInProgress
+        ? 'Sending All...'
+        : 'Send All to Genos';
+    }
+
+    if (elements.headerLoadFavouriteButton) {
+      elements.headerLoadFavouriteButton.hidden = state.savedFavouriteLists.length === 0;
+      elements.headerLoadFavouriteButton.disabled = (
+        state.savedFavouriteLists.length === 0 ||
+        state.bulkSendInProgress
+      );
+    }
+
+    if (selectedPatches.length === 0) {
+      elements.detailsContent.innerHTML = `
+        <div class="no-selection no-selection-inline">
+          <span class="no-selection-icon">🎹</span>
+          <p>Click patches to build a selected list</p>
+        </div>
+      `;
+      return;
+    }
+
+    elements.detailsContent.innerHTML = `
+      <section class="selected-patches-section" aria-label="Current selected patches">
+        ${selectedPatches.map(patch => `
+      <article
+        class="selected-patch-card ${app.selectors.isSelectedPatchExpanded(patch.id) ? 'expanded' : ''}"
+        data-id="${patch.id}"
+        aria-expanded="${app.selectors.isSelectedPatchExpanded(patch.id) ? 'true' : 'false'}"
+      >
+        <div class="selected-patch-top">
+          <div class="patch-details selected-patch-summary">
+            <div class="detail-category">${patch.category}</div>
+            <div class="detail-name">${patch.name}</div>
+          </div>
+          <div class="selected-patch-actions">
+            <span class="selected-patch-toggle" aria-hidden="true">
+              ${app.selectors.isSelectedPatchExpanded(patch.id) ? 'Hide settings' : 'Show settings'}
+            </span>
+            <button
+              type="button"
+              class="selected-patch-remove"
+              data-action="remove-selected"
+              data-id="${patch.id}"
+              aria-label="Remove ${patch.name} from selected patches"
+              ${state.bulkSendInProgress ? 'disabled' : ''}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+
+        ${app.selectors.isSelectedPatchExpanded(patch.id) ? `
+          <div class="detail-values">
+            <div class="detail-row">
+              <span class="label">Program</span>
+              <span class="value">${patch.pc}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Bank LSB</span>
+              <span class="value">${patch.lsb}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Bank MSB</span>
+              <span class="value">${patch.msb}</span>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="selected-patch-send-row">
+          <label class="selected-patch-channel-control" data-prevent-toggle="true">
+            <span class="selected-patch-channel-label">MIDI Ch</span>
+            <select
+              class="selected-patch-channel-select"
+              data-channel-select="true"
+              data-id="${patch.id}"
+              aria-label="MIDI channel for ${patch.name}"
+              ${state.bulkSendInProgress ? 'disabled' : ''}
+            >
+              ${CHANNEL_OPTIONS.map(channel => `
+                <option
+                  value="${channel}"
+                  ${app.selectors.getSelectedPatchChannel(patch.id) === channel ? 'selected' : ''}
+                  ${app.selectors.getSelectedPatchAvailableChannels(patch.id).has(channel) ? '' : 'disabled'}
+                >
+                  ${channel}
+                </option>
+              `).join('')}
+            </select>
+          </label>
+
+          <button
+            class="btn btn-primary send-btn"
+            type="button"
+            data-action="send-selected"
+            data-id="${patch.id}"
+            ${!state.midiConnected || state.bulkSendInProgress ? 'disabled' : ''}
+          >
+            <span class="btn-icon">🎵</span>
+            Send to Genos
+          </button>
+        </div>
+      </article>
+        `).join('')}
+      </section>
+    `;
+  }
+
+  app.view = {
+    renderAppModal,
+    renderMidiDeviceMenu,
+    renderThemeControl,
+    flashPatchCard,
+    renderSearchClearButton,
+    renderCategories,
+    renderPatches,
+    renderSelectedPatches
+  };
+}
+
+attachRendererView(typeof window !== 'undefined' ? window : globalThis);
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    escapeHtml,
+    buildMidiDeviceMenuMarkup,
+    attachRendererView
+  };
+}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com">
+  <title>Genos Patch Browser</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="./scripts/theme-preload.js"></script>
+  <link rel="stylesheet" href="./styles/index.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-drag-region"></div>
+      <div class="header-content">
+        <h1 class="logo">
+          <span class="logo-icon">🎹</span>
+          Genos Patch Browser
+        </h1>
+        <div class="header-actions">
+          <div class="theme-control" id="themeControl" role="group" aria-label="Appearance">
+            <span class="theme-control-label">Appearance</span>
+            <div class="theme-toggle">
+              <button type="button" class="theme-option" data-theme-preference="system" aria-pressed="false">System</button>
+              <button type="button" class="theme-option" data-theme-preference="light" aria-pressed="false">Light</button>
+              <button type="button" class="theme-option" data-theme-preference="dark" aria-pressed="false">Dark</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MIDI Settings Bar -->
+    <div class="midi-bar">
+      <div class="midi-setting">
+        <label>MIDI Output</label>
+        <div class="midi-device-control" id="midiDeviceControl">
+          <button
+            id="midiDeviceButton"
+            class="midi-device-button"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="midiDeviceMenu"
+          >
+            <span class="midi-device-main">
+              <span class="status-dot disconnected" id="midiStatusDot"></span>
+              <span class="midi-device-copy">
+                <span class="midi-device-name" id="midiDeviceName">Select MIDI Device</span>
+                <span class="midi-device-status" id="midiDeviceStatus">Not Connected</span>
+              </span>
+            </span>
+            <span class="midi-device-chevron" aria-hidden="true">▾</span>
+          </button>
+          <div id="midiDeviceMenu" class="midi-device-menu" role="listbox" hidden></div>
+        </div>
+      </div>
+      <div class="midi-bar-actions">
+        <button
+          type="button"
+          class="btn btn-secondary header-load-favourite-button"
+          id="headerLoadFavouriteButton"
+          hidden
+        >
+          Load Favourite
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary selected-patch-bulk-button"
+          id="selectedPatchSendAllButton"
+          disabled
+        >
+          Send All to Genos
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar: Categories -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Categories</h2>
+          <span class="category-count" id="categoryCount">0</span>
+        </div>
+        <div class="search-box">
+          <input type="text" id="categorySearch" placeholder="Filter categories...">
+          <button
+            type="button"
+            class="search-clear-button"
+            id="categorySearchClear"
+            aria-label="Clear category search"
+            hidden
+            disabled
+          >
+            ×
+          </button>
+        </div>
+        <ul class="category-list" id="categoryList">
+          <!-- Categories populated by JS -->
+        </ul>
+      </aside>
+
+      <!-- Patch List -->
+      <main class="patch-area">
+        <div class="patch-header">
+          <div class="patch-header-left">
+            <h2 id="currentCategory">All Patches</h2>
+            <span class="patch-count" id="patchCount">0 voices</span>
+          </div>
+        </div>
+        <div class="search-box">
+          <input type="text" id="patchSearch" placeholder="Search patches...">
+          <button
+            type="button"
+            class="search-clear-button"
+            id="patchSearchClear"
+            aria-label="Clear patch search"
+            hidden
+            disabled
+          >
+            ×
+          </button>
+        </div>
+        <div class="patch-list" id="patchList">
+          <!-- Patches populated by JS -->
+        </div>
+      </main>
+
+      <!-- Patch Details -->
+      <aside class="details-panel">
+        <div class="details-header">
+          <div class="details-header-copy">
+            <h2>Selected Patches</h2>
+            <span class="selected-patch-count" id="selectedPatchCount">0</span>
+          </div>
+          <div class="details-header-actions">
+            <button
+              type="button"
+              class="btn btn-secondary selected-patch-save-button"
+              id="selectedPatchSaveFavouriteButton"
+              disabled
+            >
+              Save Favourite
+            </button>
+            <button
+              type="button"
+              class="selected-patch-sort-button"
+              id="selectedPatchSortButton"
+              disabled
+            >
+              Sort by MIDI Ch
+            </button>
+          </div>
+        </div>
+        <div class="details-content" id="detailsContent">
+          <div class="no-selection">
+            <span class="no-selection-icon">🎹</span>
+            <p>Click patches to build a selected list</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer Status -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span id="patchesLoaded">Loading patches...</span>
+      </div>
+      <div class="footer-right">
+        <span id="lastSent">—</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="app-modal-backdrop" id="appModalBackdrop" hidden>
+    <div
+      class="app-modal"
+      id="appModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="appModalTitle"
+      aria-describedby="appModalMessage"
+    >
+      <form class="app-modal-form" id="appModalForm">
+        <div class="app-modal-copy">
+          <h2 id="appModalTitle">Save Favourite</h2>
+          <p id="appModalMessage"></p>
+        </div>
+        <label class="app-modal-field" id="appModalField" hidden>
+          <span class="app-modal-label">Favourite name</span>
+          <input
+            type="text"
+            id="appModalInput"
+            class="app-modal-input"
+            maxlength="120"
+            autocomplete="off"
+          >
+        </label>
+        <div class="app-modal-favourites" id="appModalFavourites" hidden></div>
+        <p class="app-modal-error" id="appModalError" role="alert" hidden></p>
+        <div class="app-modal-actions">
+          <button type="button" class="btn btn-secondary" id="appModalCancelButton">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="appModalConfirmButton">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="./scripts/renderer-state.js"></script>
+  <script src="./scripts/renderer-midi.js"></script>
+  <script src="./scripts/renderer-patches.js"></script>
+  <script src="./scripts/renderer-view.js"></script>
+  <script src="./scripts/renderer-theme.js"></script>
+  <script src="./scripts/renderer.js"></script>
+</body>
+</html>
