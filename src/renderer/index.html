@@ -87,6 +87,16 @@
         </div>
         <div class="search-box">
           <input type="text" id="categorySearch" placeholder="Filter categories...">
+          <button
+            type="button"
+            class="search-clear-button"
+            id="categorySearchClear"
+            aria-label="Clear category search"
+            hidden
+            disabled
+          >
+            ×
+          </button>
         </div>
         <ul class="category-list" id="categoryList">
           <!-- Categories populated by JS -->
@@ -103,6 +113,16 @@
         </div>
         <div class="search-box">
           <input type="text" id="patchSearch" placeholder="Search patches...">
+          <button
+            type="button"
+            class="search-clear-button"
+            id="patchSearchClear"
+            aria-label="Clear patch search"
+            hidden
+            disabled
+          >
+            ×
+          </button>
         </div>
         <div class="patch-list" id="patchList">
           <!-- Patches populated by JS -->

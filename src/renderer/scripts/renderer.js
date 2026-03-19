@@ -19,7 +19,9 @@
     document.addEventListener('click', handleDocumentClick);
     document.addEventListener('keydown', handleDocumentKeydown);
     elements.categorySearch.addEventListener('input', handleCategorySearchInput);
+    elements.categorySearchClear.addEventListener('click', handleCategorySearchClearClick);
     elements.patchSearch.addEventListener('input', handlePatchSearchInput);
+    elements.patchSearchClear.addEventListener('click', handlePatchSearchClearClick);
     elements.categoryList.addEventListener('click', handleCategoryListClick);
     elements.patchList.addEventListener('click', handlePatchListClick);
     elements.selectedPatchSaveFavouriteButton.addEventListener('click', handleSelectedPatchSaveFavouriteClick);
@@ -86,8 +88,20 @@
     app.patches.updateCategorySearchTerm(event.target.value);
   }
 
+  function handleCategorySearchClearClick() {
+    elements.categorySearch.value = '';
+    app.patches.updateCategorySearchTerm('');
+    elements.categorySearch.focus();
+  }
+
   function handlePatchSearchInput(event) {
     app.patches.updatePatchSearchTerm(event.target.value);
+  }
+
+  function handlePatchSearchClearClick() {
+    elements.patchSearch.value = '';
+    app.patches.updatePatchSearchTerm('');
+    elements.patchSearch.focus();
   }
 
   function handleCategoryListClick(event) {

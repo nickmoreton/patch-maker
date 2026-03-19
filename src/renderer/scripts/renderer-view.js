@@ -167,8 +167,19 @@
     }
   }
 
+  function renderSearchClearButton(input, button) {
+    if (!input || !button) {
+      return;
+    }
+
+    const hasValue = String(input.value || '').length > 0;
+    button.hidden = !hasValue;
+    button.disabled = !hasValue;
+  }
+
   function renderCategories() {
     const visibleCategories = app.selectors.getVisibleCategories();
+    renderSearchClearButton(elements.categorySearch, elements.categorySearchClear);
 
     elements.categoryList.innerHTML = `
       <li class="category-item ${state.selectedCategory === null ? 'active' : ''}" data-category="">
@@ -189,6 +200,7 @@
 
   function renderPatches() {
     const visiblePatches = app.selectors.getVisiblePatches();
+    renderSearchClearButton(elements.patchSearch, elements.patchSearchClear);
 
     elements.patchCount.textContent = `${visiblePatches.length} voices`;
 
@@ -350,6 +362,7 @@
     renderMidiDeviceMenu,
     renderThemeControl,
     flashPatchCard,
+    renderSearchClearButton,
     renderCategories,
     renderPatches,
     renderSelectedPatches
